@@ -1,0 +1,39 @@
+{
+  "name": "D1",
+  "group": "dev",
+  "app": {
+    "baseUrl": "https://d1.example.com",
+    "username": "d1_user",
+    "password": "CHANGE_ME"
+  },
+  "db": {
+    "oracle": {
+      "host": "d1-oracle.host",
+      "port": 1521,
+      "serviceName": "ORCL",
+      "user": "d1_oracle_user",
+      "password": "CHANGE_ME",
+      "poolMin": 1,
+      "poolMax": 5,
+      "poolIncrement": 1,
+      "poolTimeout": 60
+    },
+    "postgres": {
+      "host": "d1-pg.host",
+      "port": 5432,
+      "database": "d1_appdb",
+      "user": "d1_pg_user",
+      "password": "CHANGE_ME",
+      "max": 10,
+      "idleTimeoutMillis": 30000,
+      "connectionTimeoutMillis": 2000
+    }
+  },
+  "certs": {
+    "client": {
+      "pfxPath": "secrets/d1-client.pfx",
+      "passphrase": "CHANGE_ME",
+      "origin": "https://api.d1.example.com"
+    }
+  }
+}

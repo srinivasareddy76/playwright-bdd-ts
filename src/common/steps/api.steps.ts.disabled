@@ -1,0 +1,420 @@
+import { Given, When, Then } from '@cucumber/cucumber';
+import { expect } from '@playwright/test';
+import { CustomWorld } from './hooks';
+import { ApiClientFactory } from '../api/ApiClientFactory';
+import { logger } from '../utils/logger';
+import { assert } from '../support/assertions';
+import type { ApiResponse } from '../api/BaseApiClient';
+
+// API client initialization
+Given('I have an API client', async function (this: CustomWorld) {
+  await this.initializeApiClient();
+  logger.info('API client initialized');
+});
+
+Given('I have an API client with mTLS', async function (this: CustomWorld) {
+  await this.initializeApiClient();
+  logger.info('API client with mTLS initialized');
+});
+
+Given('I have an authenticated API client', async function (this: CustomWorld) {
+  await this.initializeApiClient();
+  
+  // Add authentication header if needed
+  const authToken = this.getTestData('authToken');
+  if (authToken) {
+    this.apiClient!.setDefaultHeader('Authorization', `Bearer ${authToken}`);
+    logger.info('API client authenticated with token');
+  } else {
+    logger.info('API client initialized (no auth token available)');
+  }
+});
+
+// HTTP method steps
+When('I send a GET request to {string}', async function (this: CustomWorld, endpoint: string) {
+  if (!this.apiClient) {
+    await this.initializeApiClient();
+  }
+  
+  logger.info(`Sending GET request to: ${endpoint}`);
+  const response = await this.apiClient!.get(endpoint);
+  
+  this.setTestData('lastApiResponse', response);
+  this.setTestData('lastApiEndpoint', endpoint);
+  this.setTestData('lastApiMethod', 'GET');
+  
+  logger.info(`GET request completed with status: ${response.status}`);
+});
+
+When('I send a POST request to {string}', async function (this: CustomWorld, endpoint: string) {
+  if (!this.apiClient) {
+    await this.initializeApiClient();
+  }
+  
+  const requestBody = this.getTestData('requestBody') || {};
+  
+  logger.info(`Sending POST request to: ${endpoint}`);
+  const response = await this.apiClient!.post(endpoint, requestBody);
+  
+  this.setTestData('lastApiResponse', response);
+  this.setTestData('lastApiEndpoint', endpoint);
+  this.setTestData('lastApiMethod', 'POST');
+  
+  logger.info(`POST request completed with status: ${response.status}`);
+});
+
+When('I send a PUT request to {string}', async function (this: CustomWorld, endpoint: string) {
+  if (!this.apiClient) {
+    await this.initializeApiClient();
+  }
+  
+  const requestBody = this.getTestData('requestBody') || {};
+  
+  logger.info(`Sending PUT request to: ${endpoint}`);
+  const response = await this.apiClient!.put(endpoint, requestBody);
+  
+  this.setTestData('lastApiResponse', response);
+  this.setTestData('lastApiEndpoint', endpoint);
+  this.setTestData('lastApiMethod', 'PUT');
+  
+  logger.info(`PUT request completed with status: ${response.status}`);
+});
+
+When('I send a DELETE request to {string}', async function (this: CustomWorld, endpoint: string) {
+  if (!this.apiClient) {
+    await this.initializeApiClient();
+  }
+  
+  logger.info(`Sending DELETE request to: ${endpoint}`);
+  const response = await this.apiClient!.delete(endpoint);
+  
+  this.setTestData('lastApiResponse', response);
+  this.setTestData('lastApiEndpoint', endpoint);
+  this.setTestData('lastApiMethod', 'DELETE');
+  
+  logger.info(`DELETE request completed with status: ${response.status}`);
+});
+
+// Request with data
+When('I send a POST request to {string} with data:', async function (this: CustomWorld, endpoint: string, dataTable: any) {
+  if (!this.apiClient) {
+    await this.initializeApiClient();
+  }
+  
+  const requestBody = dataTable.rowsHash();
+  this.setTestData('requestBody', requestBody);
+  
+  logger.info(`Sending POST request to: ${endpoint} with data`);
+  const response = await this.apiClient!.post(endpoint, requestBody);
+  
+  this.setTestData('lastApiResponse', response);
+  this.setTestData('lastApiEndpoint', endpoint);
+  this.setTestData('lastApiMethod', 'POST');
+  
+  logger.info(`POST request completed with status: ${response.status}`);
+});
+
+When('I send a {string} request to {string} with JSON:', async function (this: CustomWorld, method: string, endpoint: string, jsonString: string) {
+  if (!this.apiClient) {
+    await this.initializeApiClient();
+  }
+  
+  const requestBody = JSON.parse(jsonString);
+  this.setTestData('requestBody', requestBody);
+  
+  logger.info(`Sending ${method} request to: ${endpoint} with JSON data`);
+  
+  let response: ApiResponse;
+  switch (method.toUpperCase()) {
+    case 'POST':
+      response = await this.apiClient!.post(endpoint, requestBody);
+      break;
+    case 'PUT':
+      response = await this.apiClient!.put(endpoint, requestBody);
+      break;
+    case 'PATCH':
+      response = await this.apiClient!.patch(endpoint, requestBody);
+      break;
+    default:
+      throw new Error(`Unsupported HTTP method: ${method}`);
+  }
+  
+  this.setTestData('lastApiResponse', response);
+  this.setTestData('lastApiEndpoint', endpoint);
+  this.setTestData('lastApiMethod', method.toUpperCase());
+  
+  logger.info(`${method} request completed with status: ${response.status}`);
+});
+
+// mTLS specific steps
+When('I call {string} {string} with mTLS', async function (this: CustomWorld, method: string, endpoint: string) {
+  if (!this.apiClient) {
+    await this.initializeApiClient();
+  }
+  
+  logger.info(`Sending ${method} request with mTLS to: ${endpoint}`);
+  
+  let response: ApiResponse;
+  switch (method.toUpperCase()) {
+    case 'GET':
+      response = await this.apiClient!.get(endpoint);
+      break;
+    case 'POST':
+      response = await this.apiClient!.post(endpoint, this.getTestData('requestBody') || {});
+      break;
+    case 'PUT':
+      response = await this.apiClient!.put(endpoint, this.getTestData('requestBody') || {});
+      break;
+    case 'DELETE':
+      response = await this.apiClient!.delete(endpoint);
+      break;
+    default:
+      throw new Error(`Unsupported HTTP method: ${method}`);
+  }
+  
+  this.setTestData('lastApiResponse', response);
+  this.setTestData('lastApiEndpoint', endpoint);
+  this.setTestData('lastApiMethod', method.toUpperCase());
+  
+  logger.info(`${method} request with mTLS completed with status: ${response.status}`);
+});
+
+When('I make a secure API call to {string}', async function (this: CustomWorld, endpoint: string) {
+  if (!this.apiClient) {
+    await this.initializeApiClient();
+  }
+  
+  logger.info(`Making secure API call to: ${endpoint}`);
+  const response = await this.apiClient!.get(endpoint);
+  
+  this.setTestData('lastApiResponse', response);
+  this.setTestData('lastApiEndpoint', endpoint);
+  this.setTestData('lastApiMethod', 'GET');
+  
+  logger.info(`Secure API call completed with status: ${response.status}`);
+});
+
+// Request headers
+Given('I set the request header {string} to {string}', function (this: CustomWorld, headerName: string, headerValue: string) {
+  if (!this.apiClient) {
+    throw new Error('API client not initialized. Use "Given I have an API client" first.');
+  }
+  
+  this.apiClient.setDefaultHeader(headerName, headerValue);
+  logger.info(`Set request header ${headerName}: ${headerValue}`);
+});
+
+Given('I set the authorization token to {string}', function (this: CustomWorld, token: string) {
+  if (!this.apiClient) {
+    throw new Error('API client not initialized. Use "Given I have an API client" first.');
+  }
+  
+  this.apiClient.setDefaultHeader('Authorization', `Bearer ${token}`);
+  this.setTestData('authToken', token);
+  logger.info('Set authorization token');
+});
+
+// Response status assertions
+Then('the response status should be {int}', function (this: CustomWorld, expectedStatus: number) {
+  const response = this.getTestData<ApiResponse>('lastApiResponse');
+  assert.assertApiResponse(response, expectedStatus);
+  
+  logger.info(`Verified response status: ${expectedStatus}`);
+});
+
+Then('the response should be successful', function (this: CustomWorld) {
+  const response = this.getTestData<ApiResponse>('lastApiResponse');
+  assert.assertApiSuccess(response);
+  
+  logger.info(`Verified successful response: ${response.status}`);
+});
+
+Then('the response should be an error', function (this: CustomWorld) {
+  const response = this.getTestData<ApiResponse>('lastApiResponse');
+  assert.assertApiError(response);
+  
+  logger.info(`Verified error response: ${response.status}`);
+});
+
+Then('the response status should be {int} {string}', function (this: CustomWorld, expectedStatus: number, statusText: string) {
+  const response = this.getTestData<ApiResponse>('lastApiResponse');
+  expect(response.status).toBe(expectedStatus);
+  expect(response.statusText.toLowerCase()).toContain(statusText.toLowerCase());
+  
+  logger.info(`Verified response status: ${expectedStatus} ${statusText}`);
+});
+
+// Response body assertions
+Then('the response should contain {string}', function (this: CustomWorld, expectedText: string) {
+  const response = this.getTestData<ApiResponse>('lastApiResponse');
+  const bodyText = typeof response.body === 'string' ? response.body : JSON.stringify(response.body);
+  
+  expect(bodyText).toContain(expectedText);
+  logger.info(`Verified response contains: ${expectedText}`);
+});
+
+Then('the response should have property {string}', function (this: CustomWorld, propertyPath: string) {
+  const response = this.getTestData<ApiResponse>('lastApiResponse');
+  assert.assertApiResponseHasProperty(response, propertyPath);
+  
+  logger.info(`Verified response has property: ${propertyPath}`);
+});
+
+Then('the response should have property {string} with value {string}', function (this: CustomWorld, propertyPath: string, expectedValue: string) {
+  const response = this.getTestData<ApiResponse>('lastApiResponse');
+  assert.assertApiResponseHasProperty(response, propertyPath, expectedValue);
+  
+  logger.info(`Verified response property ${propertyPath} equals: ${expectedValue}`);
+});
+
+Then('the response should be a JSON array', function (this: CustomWorld) {
+  const response = this.getTestData<ApiResponse>('lastApiResponse');
+  assert.assertApiResponseArray(response);
+  
+  logger.info('Verified response is a JSON array');
+});
+
+Then('the response should be a JSON array with {int} items', function (this: CustomWorld, expectedLength: number) {
+  const response = this.getTestData<ApiResponse>('lastApiResponse');
+  assert.assertApiResponseArray(response, expectedLength);
+  
+  logger.info(`Verified response is a JSON array with ${expectedLength} items`);
+});
+
+Then('the response should match:', function (this: CustomWorld, expectedJson: string) {
+  const response = this.getTestData<ApiResponse>('lastApiResponse');
+  const expectedData = JSON.parse(expectedJson);
+  
+  assert.assertApiResponseContains(response, expectedData);
+  logger.info('Verified response matches expected JSON');
+});
+
+// Response headers
+Then('the response should have header {string}', function (this: CustomWorld, headerName: string) {
+  const response = this.getTestData<ApiResponse>('lastApiResponse');
+  
+  expect(response.headers).toHaveProperty(headerName.toLowerCase());
+  logger.info(`Verified response has header: ${headerName}`);
+});
+
+Then('the response should have header {string} with value {string}', function (this: CustomWorld, headerName: string, expectedValue: string) {
+  const response = this.getTestData<ApiResponse>('lastApiResponse');
+  
+  expect(response.headers[headerName.toLowerCase()]).toBe(expectedValue);
+  logger.info(`Verified response header ${headerName}: ${expectedValue}`);
+});
+
+// Data extraction from response
+When('I extract {string} from the response as {string}', function (this: CustomWorld, jsonPath: string, variableName: string) {
+  const response = this.getTestData<ApiResponse>('lastApiResponse');
+  
+  const pathParts = jsonPath.split('.');
+  let value = response.body;
+  
+  for (const part of pathParts) {
+    if (value && typeof value === 'object' && part in value) {
+      value = value[part];
+    } else {
+      throw new Error(`Property path '${jsonPath}' not found in response`);
+    }
+  }
+  
+  this.setTestData(variableName, value);
+  logger.info(`Extracted ${jsonPath} as ${variableName}: ${value}`);
+});
+
+When('I store the response body as {string}', function (this: CustomWorld, variableName: string) {
+  const response = this.getTestData<ApiResponse>('lastApiResponse');
+  this.setTestData(variableName, response.body);
+  
+  logger.info(`Stored response body as: ${variableName}`);
+});
+
+// API health checks
+When('I check the API health', async function (this: CustomWorld) {
+  if (!this.apiClient) {
+    await this.initializeApiClient();
+  }
+  
+  logger.info('Checking API health');
+  const isHealthy = await this.apiClient!.healthCheck();
+  
+  this.setTestData('apiHealthy', isHealthy);
+  logger.info(`API health check result: ${isHealthy ? 'healthy' : 'unhealthy'}`);
+});
+
+Then('the API should be healthy', function (this: CustomWorld) {
+  const isHealthy = this.getTestData<boolean>('apiHealthy');
+  expect(isHealthy).toBe(true);
+  
+  logger.info('Verified API is healthy');
+});
+
+// Performance assertions
+Then('the response time should be less than {int} milliseconds', function (this: CustomWorld, maxTime: number) {
+  const response = this.getTestData<ApiResponse>('lastApiResponse');
+  const requestStartTime = this.getTestData<number>('requestStartTime');
+  
+  if (requestStartTime) {
+    const responseTime = Date.now() - requestStartTime;
+    expect(responseTime).toBeLessThan(maxTime);
+    logger.info(`Verified response time (${responseTime}ms) is less than ${maxTime}ms`);
+  } else {
+    logger.warn('Request start time not recorded, skipping response time assertion');
+  }
+});
+
+// Request timing
+When('I record the request start time', function (this: CustomWorld) {
+  this.setTestData('requestStartTime', Date.now());
+  logger.debug('Recorded request start time');
+});
+
+// Batch API operations
+When('I send multiple requests:', async function (this: CustomWorld, dataTable: any) {
+  if (!this.apiClient) {
+    await this.initializeApiClient();
+  }
+  
+  const requests = dataTable.hashes();
+  const responses: ApiResponse[] = [];
+  
+  for (const request of requests) {
+    const { method, endpoint } = request;
+    let response: ApiResponse;
+    
+    switch (method.toUpperCase()) {
+      case 'GET':
+        response = await this.apiClient!.get(endpoint);
+        break;
+      case 'POST':
+        response = await this.apiClient!.post(endpoint, {});
+        break;
+      case 'PUT':
+        response = await this.apiClient!.put(endpoint, {});
+        break;
+      case 'DELETE':
+        response = await this.apiClient!.delete(endpoint);
+        break;
+      default:
+        throw new Error(`Unsupported HTTP method: ${method}`);
+    }
+    
+    responses.push(response);
+    logger.info(`${method} ${endpoint}: ${response.status}`);
+  }
+  
+  this.setTestData('batchResponses', responses);
+  logger.info(`Completed ${responses.length} batch requests`);
+});
+
+Then('all batch requests should be successful', function (this: CustomWorld) {
+  const responses = this.getTestData<ApiResponse[]>('batchResponses');
+  
+  responses.forEach((response, index) => {
+    expect(response.status).toBeGreaterThanOrEqual(200);
+    expect(response.status).toBeLessThan(300);
+  });
+  
+  logger.info(`Verified all ${responses.length} batch requests were successful`);
+});

@@ -1,0 +1,39 @@
+{
+  "name": "U1",
+  "group": "uat",
+  "app": {
+    "baseUrl": "https://u1.example.com",
+    "username": "u1_user",
+    "password": "CHANGE_ME"
+  },
+  "db": {
+    "oracle": {
+      "host": "u1-oracle.host",
+      "port": 1521,
+      "serviceName": "ORCL",
+      "user": "u1_oracle_user",
+      "password": "CHANGE_ME",
+      "poolMin": 2,
+      "poolMax": 15,
+      "poolIncrement": 2,
+      "poolTimeout": 60
+    },
+    "postgres": {
+      "host": "u1-pg.host",
+      "port": 5432,
+      "database": "u1_appdb",
+      "user": "u1_pg_user",
+      "password": "CHANGE_ME",
+      "max": 25,
+      "idleTimeoutMillis": 30000,
+      "connectionTimeoutMillis": 2000
+    }
+  },
+  "certs": {
+    "client": {
+      "pfxPath": "secrets/u1-client.pfx",
+      "passphrase": "CHANGE_ME",
+      "origin": "https://api.u1.example.com"
+    }
+  }
+}

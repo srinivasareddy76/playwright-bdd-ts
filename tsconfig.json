@@ -1,0 +1,51 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "commonjs",
+    "lib": ["ES2022", "DOM"],
+    "outDir": "./dist",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "removeComments": false,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "exactOptionalPropertyTypes": false,
+    "baseUrl": "./",
+    "paths": {
+      "@pages/*": ["src/pages/*"],
+      "@api/*": ["src/api/*"],
+      "@db/*": ["src/db/*"],
+      "@support/*": ["src/support/*"],
+      "@config/*": ["config/*"],
+      "@utils/*": ["src/utils/*"],
+      "@steps/*": ["src/steps/*"]
+    }
+  },
+  "include": [
+    "src/**/*",
+    "config/**/*",
+    "features/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    "src/api.disabled/**/*",
+    "src/db.disabled/**/*",
+    "src/steps/api.steps.ts.disabled",
+    "src/steps/db.steps.ts.disabled"
+  ],
+  "ts-node": {
+    "require": ["tsconfig-paths/register"]
+  }
+}

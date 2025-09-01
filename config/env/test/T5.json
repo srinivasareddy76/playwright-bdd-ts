@@ -1,0 +1,39 @@
+{
+  "name": "T5",
+  "group": "test",
+  "app": {
+    "baseUrl": "https://saucedemo.com",
+    "username": "standard_user",
+    "password": "secret_sauce"
+  },
+  "db": {
+    "oracle": {
+      "host": "t5-oracle.host",
+      "port": 1521,
+      "serviceName": "ORCL",
+      "user": "t5_oracle_user",
+      "password": "CHANGE_ME",
+      "poolMin": 2,
+      "poolMax": 10,
+      "poolIncrement": 2,
+      "poolTimeout": 60
+    },
+    "postgres": {
+      "host": "t5-pg.host",
+      "port": 5432,
+      "database": "t5_appdb",
+      "user": "t5_pg_user",
+      "password": "CHANGE_ME",
+      "max": 20,
+      "idleTimeoutMillis": 30000,
+      "connectionTimeoutMillis": 2000
+    }
+  },
+  "certs": {
+    "client": {
+      "pfxPath": "secrets/t5-client.pfx",
+      "passphrase": "CHANGE_ME",
+      "origin": "https://api.t5.example.com"
+    }
+  }
+}
