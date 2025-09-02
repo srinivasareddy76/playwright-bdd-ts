@@ -1,9 +1,30 @@
+/**
+ * Generic Login Page Object
+ * 
+ * This class provides a reusable login page implementation that can work
+ * with various applications. It extends BasePage and provides common login
+ * functionality with flexible selectors that match multiple patterns.
+ * 
+ * Features:
+ * - Flexible selector patterns for different applications
+ * - Login/logout functionality
+ * - Error handling and validation
+ * - Loading state management
+ * - Form validation utilities
+ * 
+ * @author OpenHands
+ * @version 1.0.0
+ */
+
 import { Page } from '@playwright/test';
 import { BasePage } from './BasePage';
 import { logger } from '../../utils/logger';
 
+/**
+ * Generic login page class for handling authentication across different applications
+ */
 export class LoginPage extends BasePage {
-  // Selectors
+  /** Flexible selectors that work with multiple applications */
   private readonly selectors = {
     usernameInput: '[data-testid="username"], #username, input[name="username"]',
     passwordInput: '[data-testid="password"], #password, input[name="password"]',
@@ -18,13 +39,21 @@ export class LoginPage extends BasePage {
     super(page);
   }
 
-  // Navigation
+  // ==================== Navigation Methods ====================
+
+  /**
+   * Navigates to the login page
+   * @param baseUrl - Optional base URL, defaults to '/login'
+   */
   async goto(baseUrl?: string): Promise<void> {
     const url = baseUrl || '/login';
     await super.goto(url);
     await this.waitForPageLoad();
   }
 
+  /**
+   * Waits for the login page to fully load
+   */
   private async waitForPageLoad(): Promise<void> {
     // Wait for the login form to be visible
     await this.waitForVisible(this.selectors.usernameInput);
@@ -32,7 +61,13 @@ export class LoginPage extends BasePage {
     await this.waitForVisible(this.selectors.loginButton);
   }
 
-  // Login actions
+  // ==================== Login Actions ====================
+
+  /**
+   * Performs complete login flow with username and password
+   * @param username - Username for authentication
+   * @param password - Password for authentication
+   */
   async login(username: string, password: string): Promise<void> {
     logger.info(`Attempting to login with username: ${username}`);
     
@@ -44,23 +79,37 @@ export class LoginPage extends BasePage {
     await this.waitForLoginResult();
   }
 
+  /**
+   * Enters username into the username field
+   * @param username - Username to enter
+   */
   async enterUsername(username: string): Promise<void> {
     await this.waitForVisible(this.selectors.usernameInput);
     await this.clear(this.selectors.usernameInput);
     await this.type(this.selectors.usernameInput, username);
   }
 
+  /**
+   * Enters password into the password field
+   * @param password - Password to enter
+   */
   async enterPassword(password: string): Promise<void> {
     await this.waitForVisible(this.selectors.passwordInput);
     await this.clear(this.selectors.passwordInput);
     await this.type(this.selectors.passwordInput, password);
   }
 
+  /**
+   * Clicks the login button
+   */
   async clickLoginButton(): Promise<void> {
     await this.waitForEnabled(this.selectors.loginButton);
     await this.click(this.selectors.loginButton);
   }
 
+  /**
+   * Waits for login operation to complete (success or error)
+   */
   private async waitForLoginResult(): Promise<void> {
     try {
       // Wait for either success (redirect/welcome) or error message
@@ -74,7 +123,11 @@ export class LoginPage extends BasePage {
     }
   }
 
-  // Logout actions
+  // ==================== Logout Actions ====================
+
+  /**
+   * Performs logout operation
+   */
   async logout(): Promise<void> {
     logger.info('Attempting to logout');
     
@@ -86,6 +139,9 @@ export class LoginPage extends BasePage {
     }
   }
 
+  /**
+   * Waits for logout operation to complete
+   */
   private async waitForLogout(): Promise<void> {
     try {
       // Wait for redirect to login page or login form to appear
@@ -98,7 +154,12 @@ export class LoginPage extends BasePage {
     }
   }
 
-  // Status checks
+  // ==================== Status Check Methods ====================
+
+  /**
+   * Checks if user is currently logged in
+   * @returns True if user is logged in, false otherwise
+   */
   async isLoggedIn(): Promise<boolean> {
     try {
       // Check for indicators that user is logged in
@@ -113,14 +174,26 @@ export class LoginPage extends BasePage {
     }
   }
 
+  /**
+   * Checks if user is currently logged out
+   * @returns True if user is logged out, false otherwise
+   */
   async isLoggedOut(): Promise<boolean> {
     return !(await this.isLoggedIn());
   }
 
+  /**
+   * Checks if a login error is displayed
+   * @returns True if error message is visible, false otherwise
+   */
   async hasLoginError(): Promise<boolean> {
     return await this.isVisible(this.selectors.errorMessage);
   }
 
+  /**
+   * Gets the text of the login error message
+   * @returns Error message text or empty string
+   */
   async getLoginErrorMessage(): Promise<string> {
     if (await this.hasLoginError()) {
       return await this.getText(this.selectors.errorMessage);
@@ -128,11 +201,20 @@ export class LoginPage extends BasePage {
     return '';
   }
 
+  /**
+   * Checks if page is in loading state
+   * @returns True if loading spinner is visible, false otherwise
+   */
   async isLoading(): Promise<boolean> {
     return await this.isVisible(this.selectors.loadingSpinner);
   }
 
-  // Form validation
+  // ==================== Form Validation Methods ====================
+
+  /**
+   * Checks if the login form is fully visible
+   * @returns True if all form elements are visible, false otherwise
+   */
   async isLoginFormVisible(): Promise<boolean> {
     const usernameVisible = await this.isVisible(this.selectors.usernameInput);
     const passwordVisible = await this.isVisible(this.selectors.passwordInput);
@@ -141,21 +223,36 @@ export class LoginPage extends BasePage {
     return usernameVisible && passwordVisible && buttonVisible;
   }
 
+  /**
+   * Checks if the login button is enabled
+   * @returns True if login button is enabled, false otherwise
+   */
   async isLoginButtonEnabled(): Promise<boolean> {
     return await this.isEnabled(this.selectors.loginButton);
   }
 
+  /**
+   * Gets the current value of the username field
+   * @returns Username field value
+   */
   async getUsername(): Promise<string> {
     return await this.getValue(this.selectors.usernameInput);
   }
 
-  // Assertions
+  // ==================== Assertion Methods ====================
+
+  /**
+   * Asserts that the login form is visible
+   */
   async assertLoginFormVisible(): Promise<void> {
     await this.assertElementVisible(this.selectors.usernameInput);
     await this.assertElementVisible(this.selectors.passwordInput);
     await this.assertElementVisible(this.selectors.loginButton);
   }
 
+  /**
+   * Asserts that the user is logged in
+   */
   async assertLoggedIn(): Promise<void> {
     const isLoggedIn = await this.isLoggedIn();
     if (!isLoggedIn) {
@@ -164,6 +261,9 @@ export class LoginPage extends BasePage {
     logger.info('User is successfully logged in');
   }
 
+  /**
+   * Asserts that the user is logged out
+   */
   async assertLoggedOut(): Promise<void> {
     const isLoggedOut = await this.isLoggedOut();
     if (!isLoggedOut) {
@@ -172,6 +272,10 @@ export class LoginPage extends BasePage {
     logger.info('User is successfully logged out');
   }
 
+  /**
+   * Asserts that a login error is displayed with optional message verification
+   * @param expectedMessage - Optional expected error message text
+   */
   async assertLoginError(expectedMessage?: string): Promise<void> {
     await this.assertElementVisible(this.selectors.errorMessage);
     

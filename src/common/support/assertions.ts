@@ -1,12 +1,30 @@
+/**
+ * Custom Assertions Module
+ * 
+ * This module provides custom assertion utilities for the BDD framework.
+ * It extends Playwright's built-in assertions with domain-specific validations
+ * for database operations, API responses, and common test scenarios.
+ * 
+ * Features:
+ * - Database result assertions
+ * - API response validations
+ * - Custom error messages and logging
+ * - Type-safe assertion methods
+ * 
+ * @author OpenHands
+ * @version 1.0.0
+ */
+
 import { expect } from '@playwright/test';
 import { logger } from '../../utils/logger';
 
-// Simplified types for the disabled modules
+/** Interface for database query results */
 interface DatabaseResult {
   rowCount: number;
   rows: any[];
 }
 
+/** Interface for API response objects */
 interface ApiResponse {
   status: number;
   statusText: string;
@@ -14,8 +32,17 @@ interface ApiResponse {
   body: any;
 }
 
+/**
+ * Custom assertion utilities for enhanced test validation
+ */
 export class CustomAssertions {
-  // Database assertions
+  // ==================== Database Assertions ====================
+
+  /**
+   * Asserts database result structure and optional row count
+   * @param result - Database query result
+   * @param expectedRowCount - Optional expected number of rows
+   */
   static assertDatabaseResult(result: DatabaseResult, expectedRowCount?: number): void {
     expect(result).toBeDefined();
     expect(result.rows).toBeDefined();
@@ -29,6 +56,11 @@ export class CustomAssertions {
     logger.debug(`Database assertion passed: ${result.rowCount} rows returned`);
   }
 
+  /**
+   * Asserts that at least one row exists in the database result
+   * @param result - Database query result
+   * @param message - Optional custom error message
+   */
   static assertDatabaseRowExists(result: DatabaseResult, message?: string): void {
     const msg = message || 'Expected at least one row to exist';
     expect(result.rowCount, msg).toBeGreaterThan(0);
@@ -37,6 +69,11 @@ export class CustomAssertions {
     logger.debug('Database assertion passed: Row exists');
   }
 
+  /**
+   * Asserts that no rows exist in the database result
+   * @param result - Database query result
+   * @param message - Optional custom error message
+   */
   static assertDatabaseRowNotExists(result: DatabaseResult, message?: string): void {
     const msg = message || 'Expected no rows to exist';
     expect(result.rowCount, msg).toBe(0);
@@ -45,6 +82,13 @@ export class CustomAssertions {
     logger.debug('Database assertion passed: No rows exist');
   }
 
+  /**
+   * Asserts that a specific column contains expected value in the first row
+   * @param result - Database query result
+   * @param columnName - Name of the column to check
+   * @param expectedValue - Expected value in the column
+   * @param message - Optional custom error message
+   */
   static assertDatabaseRowContains(result: DatabaseResult, columnName: string, expectedValue: any, message?: string): void {
     this.assertDatabaseRowExists(result);
     
@@ -57,6 +101,12 @@ export class CustomAssertions {
     logger.debug(`Database assertion passed: Column '${columnName}' contains expected value`);
   }
 
+  /**
+   * Asserts that the first row matches the expected object structure
+   * @param result - Database query result
+   * @param expectedRow - Expected row data as key-value pairs
+   * @param message - Optional custom error message
+   */
   static assertDatabaseRowMatches(result: DatabaseResult, expectedRow: Record<string, any>, message?: string): void {
     this.assertDatabaseRowExists(result);
     
@@ -71,7 +121,13 @@ export class CustomAssertions {
     logger.debug('Database assertion passed: Row matches expected object');
   }
 
-  // API assertions
+  // ==================== API Assertions ====================
+
+  /**
+   * Asserts basic API response structure and optional status code
+   * @param response - API response object
+   * @param expectedStatus - Optional expected HTTP status code
+   */
   static assertApiResponse(response: ApiResponse, expectedStatus?: number): void {
     expect(response).toBeDefined();
     expect(response.status).toBeDefined();
@@ -84,6 +140,10 @@ export class CustomAssertions {
     logger.debug(`API assertion passed: Status ${response.status}`);
   }
 
+  /**
+   * Asserts that API response has a success status code (2xx)
+   * @param response - API response object
+   */
   static assertApiSuccess(response: ApiResponse): void {
     expect(response.status).toBeGreaterThanOrEqual(200);
     expect(response.status).toBeLessThan(300);

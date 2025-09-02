@@ -1,9 +1,32 @@
+/**
+ * Common Step Definitions
+ * 
+ * This module contains reusable Cucumber step definitions that can be used
+ * across different test scenarios. It provides common web interaction patterns
+ * including navigation, element interactions, form handling, and assertions.
+ * 
+ * Features:
+ * - Navigation steps for different pages
+ * - Element interaction (click, type, select)
+ * - Form handling and input validation
+ * - Wait conditions and assertions
+ * - URL and page state verification
+ * - Screenshot and debugging utilities
+ * 
+ * @author OpenHands
+ * @version 1.0.0
+ */
+
 import { Given, When, Then } from '@cucumber/cucumber';
 import { expect } from '@playwright/test';
 import { CustomWorld } from './hooks';
 import { logger } from '../../utils/logger';
 
-// Navigation steps
+// ==================== Navigation Steps ====================
+
+/**
+ * Navigates to a specific URL (absolute or relative)
+ */
 Given('I navigate to {string}', async function (this: CustomWorld, url: string) {
   await this.initializeBrowser();
   
@@ -16,6 +39,9 @@ Given('I navigate to {string}', async function (this: CustomWorld, url: string) 
   this.setTestData('currentUrl', fullUrl);
 });
 
+/**
+ * Navigates to a predefined page by name
+ */
 Given('I am on the {string} page', async function (this: CustomWorld, pageName: string) {
   await this.initializeBrowser();
   
@@ -34,112 +60,178 @@ Given('I am on the {string} page', async function (this: CustomWorld, pageName: 
   await this.page!.goto(fullUrl, { waitUntil: 'networkidle' });
 });
 
-// Element interaction steps
+// ==================== Element Interaction Steps ====================
+
+/**
+ * Clicks on an element using CSS selector
+ */
 When('I click on {string}', async function (this: CustomWorld, selector: string) {
   logger.info(`Clicking on element: ${selector}`);
   await this.page!.locator(selector).click();
 });
 
+/**
+ * Clicks on a button by its text content
+ */
 When('I click the {string} button', async function (this: CustomWorld, buttonText: string) {
   const selector = `button:has-text("${buttonText}"), input[type="submit"][value="${buttonText}"], [role="button"]:has-text("${buttonText}")`;
   logger.info(`Clicking button with text: ${buttonText}`);
   await this.page!.locator(selector).click();
 });
 
+/**
+ * Types text into an element using CSS selector
+ */
 When('I type {string} into {string}', async function (this: CustomWorld, text: string, selector: string) {
   logger.info(`Typing "${text}" into element: ${selector}`);
   await this.page!.locator(selector).fill(text);
 });
 
+/**
+ * Types text into a form field by field name
+ */
 When('I type {string} into the {string} field', async function (this: CustomWorld, text: string, fieldName: string) {
   const selector = `input[name="${fieldName}"], input[id="${fieldName}"], [data-testid="${fieldName}"], label:has-text("${fieldName}") + input`;
   logger.info(`Typing "${text}" into ${fieldName} field`);
   await this.page!.locator(selector).fill(text);
 });
 
+/**
+ * Selects an option from a dropdown by text
+ */
 When('I select {string} from {string}', async function (this: CustomWorld, optionText: string, selector: string) {
   logger.info(`Selecting "${optionText}" from dropdown: ${selector}`);
   await this.page!.locator(selector).selectOption({ label: optionText });
 });
 
+/**
+ * Checks a checkbox element
+ */
 When('I check the {string} checkbox', async function (this: CustomWorld, selector: string) {
   logger.info(`Checking checkbox: ${selector}`);
   await this.page!.locator(selector).check();
 });
 
+/**
+ * Unchecks a checkbox element
+ */
 When('I uncheck the {string} checkbox', async function (this: CustomWorld, selector: string) {
   logger.info(`Unchecking checkbox: ${selector}`);
   await this.page!.locator(selector).uncheck();
 });
 
-// Wait steps
+// ==================== Wait Steps ====================
+
+/**
+ * Waits for a specified number of seconds
+ */
 When('I wait for {int} seconds', async function (this: CustomWorld, seconds: number) {
   logger.info(`Waiting for ${seconds} seconds`);
   await this.page!.waitForTimeout(seconds * 1000);
 });
 
+/**
+ * Waits for an element to become visible
+ */
 When('I wait for {string} to be visible', async function (this: CustomWorld, selector: string) {
   logger.info(`Waiting for element to be visible: ${selector}`);
   await this.page!.locator(selector).waitFor({ state: 'visible' });
 });
 
+/**
+ * Waits for an element to become hidden
+ */
 When('I wait for {string} to be hidden', async function (this: CustomWorld, selector: string) {
   logger.info(`Waiting for element to be hidden: ${selector}`);
   await this.page!.locator(selector).waitFor({ state: 'hidden' });
 });
 
+/**
+ * Waits for the page to fully load
+ */
 When('I wait for the page to load', async function (this: CustomWorld) {
   logger.info('Waiting for page to load');
   await this.page!.waitForLoadState('networkidle');
 });
 
-// Assertion steps
+// ==================== Assertion Steps ====================
+
+/**
+ * Verifies that specific text is visible on the page
+ */
 Then('I should see {string}', async function (this: CustomWorld, text: string) {
   logger.info(`Verifying text is visible: ${text}`);
   await expect(this.page!.locator(`text=${text}`)).toBeVisible();
 });
 
+/**
+ * Verifies that specific text exists on the page
+ */
 Then('I should see the text {string}', async function (this: CustomWorld, text: string) {
   logger.info(`Verifying text exists on page: ${text}`);
   await expect(this.page!.locator(`text=${text}`)).toBeVisible();
 });
 
+/**
+ * Verifies that specific text is not visible on the page
+ */
 Then('I should not see {string}', async function (this: CustomWorld, text: string) {
   logger.info(`Verifying text is not visible: ${text}`);
   await expect(this.page!.locator(`text=${text}`)).not.toBeVisible();
 });
 
+/**
+ * Verifies that an element is visible
+ */
 Then('the element {string} should be visible', async function (this: CustomWorld, selector: string) {
   logger.info(`Verifying element is visible: ${selector}`);
   await expect(this.page!.locator(selector)).toBeVisible();
 });
 
+/**
+ * Verifies that an element is hidden
+ */
 Then('the element {string} should be hidden', async function (this: CustomWorld, selector: string) {
   logger.info(`Verifying element is hidden: ${selector}`);
   await expect(this.page!.locator(selector)).toBeHidden();
 });
 
+/**
+ * Verifies that an element is enabled
+ */
 Then('the element {string} should be enabled', async function (this: CustomWorld, selector: string) {
   logger.info(`Verifying element is enabled: ${selector}`);
   await expect(this.page!.locator(selector)).toBeEnabled();
 });
 
+/**
+ * Verifies that an element is disabled
+ */
 Then('the element {string} should be disabled', async function (this: CustomWorld, selector: string) {
   logger.info(`Verifying element is disabled: ${selector}`);
   await expect(this.page!.locator(selector)).toBeDisabled();
 });
 
+/**
+ * Verifies that a form field contains expected value
+ */
 Then('the {string} field should contain {string}', async function (this: CustomWorld, fieldName: string, expectedValue: string) {
   const selector = `input[name="${fieldName}"], input[id="${fieldName}"], [data-testid="${fieldName}"]`;
   logger.info(`Verifying ${fieldName} field contains: ${expectedValue}`);
   await expect(this.page!.locator(selector)).toHaveValue(expectedValue);
 });
 
+/**
+ * Verifies the page title
+ */
 Then('the page title should be {string}', async function (this: CustomWorld, expectedTitle: string) {
   logger.info(`Verifying page title: ${expectedTitle}`);
   await expect(this.page!).toHaveTitle(expectedTitle);
 });
 
+/**
+ * Verifies the current URL
+ */
 Then('the current URL should be {string}', async function (this: CustomWorld, expectedUrl: string) {
   const fullUrl = expectedUrl.startsWith('http') ? expectedUrl : `${this.config.app.baseUrl}${expectedUrl}`;
   logger.info(`Verifying current URL: ${fullUrl}`);
