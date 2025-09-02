@@ -33,6 +33,8 @@
     "examples:api": "node run-api-examples.js",
     "test:api:simple": "node test-api-simple.js",
     "test:api:only": "node run-api-tests.js",
+    "verify-setup": "node verify-setup.js",
+    "verify": "node verify-setup.js",
     "dev": "npm run test:headed"
   },
   "keywords": [
