@@ -1,0 +1,39 @@
+{
+  "name": "QD1",
+  "group": "onprem",
+  "app": {
+    "baseUrl": "https://qd1.onprem.example.com",
+    "username": "qd1_user",
+    "password": "CHANGE_ME"
+  },
+  "db": {
+    "oracle": {
+      "host": "qd1-oracle.onprem.host",
+      "port": 1521,
+      "serviceName": "ORCL",
+      "user": "qd1_oracle_user",
+      "password": "CHANGE_ME",
+      "poolMin": 3,
+      "poolMax": 20,
+      "poolIncrement": 3,
+      "poolTimeout": 120
+    },
+    "postgres": {
+      "host": "qd1-pg.onprem.host",
+      "port": 5432,
+      "database": "qd1_appdb",
+      "user": "qd1_pg_user",
+      "password": "CHANGE_ME",
+      "max": 30,
+      "idleTimeoutMillis": 60000,
+      "connectionTimeoutMillis": 5000
+    }
+  },
+  "certs": {
+    "client": {
+      "pfxPath": "secrets/qd1-client.pfx",
+      "passphrase": "CHANGE_ME",
+      "origin": "https://api.qd1.onprem.example.com"
+    }
+  }
+}

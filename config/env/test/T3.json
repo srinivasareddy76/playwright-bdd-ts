@@ -1,0 +1,39 @@
+{
+  "name": "T3",
+  "group": "test",
+  "app": {
+    "baseUrl": "https://practicetestautomation.com/practice-test-login/",
+    "username": "student",
+    "password": "Password123"
+  },
+  "db": {
+    "oracle": {
+      "host": "t3-oracle.host",
+      "port": 1521,
+      "serviceName": "ORCL",
+      "user": "t3_oracle_user",
+      "password": "CHANGE_ME",
+      "poolMin": 2,
+      "poolMax": 10,
+      "poolIncrement": 2,
+      "poolTimeout": 60
+    },
+    "postgres": {
+      "host": "t3-pg.host",
+      "port": 5432,
+      "database": "t3_appdb",
+      "user": "t3_pg_user",
+      "password": "CHANGE_ME",
+      "max": 20,
+      "idleTimeoutMillis": 30000,
+      "connectionTimeoutMillis": 2000
+    }
+  },
+  "certs": {
+    "client": {
+      "pfxPath": "secrets/t3-client.pfx",
+      "passphrase": "CHANGE_ME",
+      "origin": "https://api.t3.example.com"
+    }
+  }
+}

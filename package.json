@@ -1,0 +1,69 @@
+{
+  "name": "playwright-bdd-ts",
+  "version": "1.0.0",
+  "description": "Playwright + TypeScript BDD framework with Oracle/Postgres and PFX client certificate support",
+  "main": "index.js",
+  "scripts": {
+    "test:bdd": "cucumber-js",
+    "test:ui": "cucumber-js --tags '@ui'",
+    "test:api": "cucumber-js --tags '@api'",
+    "test:db": "cucumber-js --tags '@db'",
+    "test:env": "cross-env APP_ENV=T3 npm run test:bdd",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "format": "prettier --write src/**/*.ts",
+    "format:check": "prettier --check src/**/*.ts",
+    "build": "tsc",
+    "clean": "rimraf dist",
+    "test:saucedemo": "npm run build && cp -r config dist/ && APP_ENV=T5 HEADLESS=true cucumber-js src/applications/saucedemo/features/saucedemo_login.feature --require 'dist/src/common/steps/**/*.js' --require 'dist/src/applications/**/steps/**/*.js' --format progress-bar --format json:test-results/saucedemo-report.json --format html:test-results/saucedemo-report.html",
+    "test:smoke": "npm run build && cp -r config dist/ && APP_ENV=T5 HEADLESS=true cucumber-js src/applications/saucedemo/features/saucedemo_login.feature --require 'dist/src/common/steps/**/*.js' --require 'dist/src/applications/**/steps/**/*.js' --format progress-bar --tags '@smoke'",
+    "test:positive": "npm run build && cp -r config dist/ && APP_ENV=T5 HEADLESS=true cucumber-js src/applications/saucedemo/features/saucedemo_login.feature --require 'dist/src/common/steps/**/*.js' --require 'dist/src/applications/**/steps/**/*.js' --format progress-bar --tags '@positive'",
+    "test:negative": "npm run build && cp -r config dist/ && APP_ENV=T5 HEADLESS=true cucumber-js src/applications/saucedemo/features/saucedemo_login.feature --require 'dist/src/common/steps/**/*.js' --require 'dist/src/applications/**/steps/**/*.js' --format progress-bar --tags '@negative'",
+    "test:headed": "npm run build && cp -r config dist/ && APP_ENV=T5 HEADLESS=false cucumber-js src/applications/saucedemo/features/saucedemo_login.feature --require 'dist/src/common/steps/**/*.js' --require 'dist/src/applications/**/steps/**/*.js' --format progress-bar --tags '@smoke'",
+    "test:practicetest": "npm run build && cp -r config dist/ && APP_ENV=T3 HEADLESS=true cucumber-js src/applications/practicetest/features/practicetest_login.feature --require 'dist/src/common/steps/**/*.js' --require 'dist/src/applications/**/steps/**/*.js' --format progress-bar --format json:test-results/practicetest-report.json --format html:test-results/practicetest-report.html",
+    "test:practicetest:smoke": "npm run build && cp -r config dist/ && APP_ENV=T3 HEADLESS=true cucumber-js src/applications/practicetest/features/practicetest_login.feature --require 'dist/src/common/steps/**/*.js' --require 'dist/src/applications/**/steps/**/*.js' --format progress-bar --tags '@smoke'",
+    "test:practicetest:positive": "npm run build && cp -r config dist/ && APP_ENV=T3 HEADLESS=true cucumber-js src/applications/practicetest/features/practicetest_login.feature --require 'dist/src/common/steps/**/*.js' --require 'dist/src/applications/**/steps/**/*.js' --format progress-bar --tags '@positive'",
+    "test:practicetest:negative": "npm run build && cp -r config dist/ && APP_ENV=T3 HEADLESS=true cucumber-js src/applications/practicetest/features/practicetest_login.feature --require 'dist/src/common/steps/**/*.js' --require 'dist/src/applications/**/steps/**/*.js' --format progress-bar --tags '@negative'",
+    "test:practicetest:headed": "npm run build && cp -r config dist/ && APP_ENV=T3 HEADLESS=false cucumber-js src/applications/practicetest/features/practicetest_login.feature --require 'dist/src/common/steps/**/*.js' --require 'dist/src/applications/**/steps/**/*.js' --format progress-bar --tags '@smoke'",
+    "dev": "npm run test:headed"
+  },
+  "keywords": [
+    "playwright",
+    "typescript",
+    "bdd",
+    "cucumber",
+    "oracle",
+    "postgres",
+    "mtls",
+    "pom"
+  ],
+  "author": "OpenHands",
+  "license": "MIT",
+  "devDependencies": {
+    "@cucumber/cucumber": "^10.3.1",
+    "@playwright/test": "^1.40.1",
+    "@types/node": "^20.10.5",
+    "@types/oracledb": "^6.9.1",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "cross-env": "^7.0.3",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.1.2",
+    "prettier": "^3.1.1",
+    "rimraf": "^5.0.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "oracledb": "^6.3.0",
+    "pg": "^8.11.3",
+    "playwright": "^1.40.1",
+    "winston": "^3.11.0",
+    "zod": "^3.22.4"
+  },
+  "optionalDependencies": {
+    "@types/pg": "^8.10.9"
+  }
+}

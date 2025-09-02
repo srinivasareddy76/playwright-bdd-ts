@@ -1,0 +1,443 @@
+import { Given, When, Then } from '@cucumber/cucumber';
+import { expect } from '@playwright/test';
+import { CustomWorld } from './hooks';
+import { getSqlHelper, getDatabaseType, executeQuery } from '../db';
+import { logger } from '../utils/logger';
+import { assert } from '../support/assertions';
+import { DatabaseResult, DatabaseType } from '../db/types';
+
+// Database connection steps
+Given('I have a database connection', async function (this: CustomWorld) {
+  await this.initializeDatabase();
+  logger.info(`Database connection established (${getDatabaseType()})`);
+});
+
+Given('I connect to the database', async function (this: CustomWorld) {
+  await this.initializeDatabase();
+  logger.info(`Connected to ${getDatabaseType()} database`);
+});
+
+Given('I have an Oracle database connection', async function (this: CustomWorld) {
+  await this.initializeDatabase();
+  
+  const dbType = getDatabaseType();
+  if (dbType !== DatabaseType.ORACLE) {
+    throw new Error(`Expected Oracle database but got ${dbType}`);
+  }
+  
+  logger.info('Oracle database connection established');
+});
+
+Given('I have a PostgreSQL database connection', async function (this: CustomWorld) {
+  await this.initializeDatabase();
+  
+  const dbType = getDatabaseType();
+  if (dbType !== DatabaseType.POSTGRES) {
+    throw new Error(`Expected PostgreSQL database but got ${dbType}`);
+  }
+  
+  logger.info('PostgreSQL database connection established');
+});
+
+// Query execution steps
+When('I execute the query {string}', async function (this: CustomWorld, sql: string) {
+  if (!this.sqlHelper) {
+    await this.initializeDatabase();
+  }
+  
+  logger.info(`Executing query: ${sql.substring(0, 100)}${sql.length > 100 ? '...' : ''}`);
+  
+  const result = await executeQuery(sql);
+  this.setTestData('lastQueryResult', result);
+  this.setTestData('lastQuery', sql);
+  
+  logger.info(`Query executed successfully, returned ${result.rowCount} rows`);
+});
+
+When('I execute the query {string} with parameters:', async function (this: CustomWorld, sql: string, dataTable: any) {
+  if (!this.sqlHelper) {
+    await this.initializeDatabase();
+  }
+  
+  const params = dataTable.rowsHash();
+  const paramArray = Object.values(params);
+  
+  logger.info(`Executing parameterized query: ${sql.substring(0, 100)}${sql.length > 100 ? '...' : ''}`);
+  logger.debug(`Parameters: ${JSON.stringify(params)}`);
+  
+  const result = await executeQuery(sql, paramArray);
+  this.setTestData('lastQueryResult', result);
+  this.setTestData('lastQuery', sql);
+  this.setTestData('lastQueryParams', params);
+  
+  logger.info(`Parameterized query executed successfully, returned ${result.rowCount} rows`);
+});
+
+When('I run {string} query {string} with parameters:', async function (this: CustomWorld, dbType: string, sqlName: string, dataTable: any) {
+  if (!this.sqlHelper) {
+    await this.initializeDatabase();
+  }
+  
+  const params = dataTable.rowsHash();
+  const paramArray = Object.values(params);
+  
+  // Get predefined queries based on database type and query name
+  const sql = getPredefinedQuery(dbType, sqlName);
+  
+  logger.info(`Executing ${dbType} query '${sqlName}': ${sql.substring(0, 100)}${sql.length > 100 ? '...' : ''}`);
+  logger.debug(`Parameters: ${JSON.stringify(params)}`);
+  
+  const result = await executeQuery(sql, paramArray);
+  this.setTestData('lastQueryResult', result);
+  this.setTestData('lastQuery', sql);
+  this.setTestData('lastQueryParams', params);
+  
+  logger.info(`Query '${sqlName}' executed successfully, returned ${result.rowCount} rows`);
+});
+
+// Specific database operations
+When('I insert a record into {string} table:', async function (this: CustomWorld, tableName: string, dataTable: any) {
+  if (!this.sqlHelper) {
+    await this.initializeDatabase();
+  }
+  
+  const data = dataTable.rowsHash();
+  
+  logger.info(`Inserting record into ${tableName} table`);
+  logger.debug(`Data: ${JSON.stringify(data)}`);
+  
+  let result: DatabaseResult;
+  
+  if (getDatabaseType() === DatabaseType.ORACLE) {
+    const oracleSql = this.sqlHelper as any; // Type assertion for Oracle helper
+    result = await oracleSql.insert(tableName, data);
+  } else {
+    const postgresSql = this.sqlHelper as any; // Type assertion for Postgres helper
+    result = await postgresSql.insert(tableName, data);
+  }
+  
+  this.setTestData('lastQueryResult', result);
+  this.setTestData('insertedData', data);
+  
+  logger.info(`Record inserted successfully into ${tableName}`);
+});
+
+When('I update records in {string} table where {string} with:', async function (this: CustomWorld, tableName: string, whereClause: string, dataTable: any) {
+  if (!this.sqlHelper) {
+    await this.initializeDatabase();
+  }
+  
+  const data = dataTable.rowsHash();
+  
+  logger.info(`Updating records in ${tableName} table where ${whereClause}`);
+  logger.debug(`Data: ${JSON.stringify(data)}`);
+  
+  let result: DatabaseResult;
+  
+  if (getDatabaseType() === DatabaseType.ORACLE) {
+    const oracleSql = this.sqlHelper as any;
+    result = await oracleSql.update(tableName, data, whereClause);
+  } else {
+    const postgresSql = this.sqlHelper as any;
+    result = await postgresSql.update(tableName, data, whereClause);
+  }
+  
+  this.setTestData('lastQueryResult', result);
+  this.setTestData('updatedData', data);
+  
+  logger.info(`Updated ${result.rowCount} records in ${tableName}`);
+});
+
+When('I delete records from {string} table where {string}', async function (this: CustomWorld, tableName: string, whereClause: string) {
+  if (!this.sqlHelper) {
+    await this.initializeDatabase();
+  }
+  
+  logger.info(`Deleting records from ${tableName} table where ${whereClause}`);
+  
+  let result: DatabaseResult;
+  
+  if (getDatabaseType() === DatabaseType.ORACLE) {
+    const oracleSql = this.sqlHelper as any;
+    result = await oracleSql.delete(tableName, whereClause);
+  } else {
+    const postgresSql = this.sqlHelper as any;
+    result = await postgresSql.delete(tableName, whereClause);
+  }
+  
+  this.setTestData('lastQueryResult', result);
+  
+  logger.info(`Deleted ${result.rowCount} records from ${tableName}`);
+});
+
+// Query result assertions
+Then('the query should return {int} rows', function (this: CustomWorld, expectedRowCount: number) {
+  const result = this.getTestData<DatabaseResult>('lastQueryResult');
+  assert.assertDatabaseResult(result, expectedRowCount);
+  
+  logger.info(`Verified query returned ${expectedRowCount} rows`);
+});
+
+Then('the result should have at least {int} rows', function (this: CustomWorld, minRowCount: number) {
+  const result = this.getTestData<DatabaseResult>('lastQueryResult');
+  assert.assertDatabaseResult(result);
+  
+  expect(result.rowCount).toBeGreaterThanOrEqual(minRowCount);
+  logger.info(`Verified query returned at least ${minRowCount} rows (actual: ${result.rowCount})`);
+});
+
+Then('the result should have no more than {int} rows', function (this: CustomWorld, maxRowCount: number) {
+  const result = this.getTestData<DatabaseResult>('lastQueryResult');
+  assert.assertDatabaseResult(result);
+  
+  expect(result.rowCount).toBeLessThanOrEqual(maxRowCount);
+  logger.info(`Verified query returned no more than ${maxRowCount} rows (actual: ${result.rowCount})`);
+});
+
+Then('the query should return no rows', function (this: CustomWorld) {
+  const result = this.getTestData<DatabaseResult>('lastQueryResult');
+  assert.assertDatabaseRowNotExists(result);
+  
+  logger.info('Verified query returned no rows');
+});
+
+Then('the query should return at least one row', function (this: CustomWorld) {
+  const result = this.getTestData<DatabaseResult>('lastQueryResult');
+  assert.assertDatabaseRowExists(result);
+  
+  logger.info(`Verified query returned at least one row (actual: ${result.rowCount})`);
+});
+
+// Column value assertions
+Then('the first row should have {string} equal to {string}', function (this: CustomWorld, columnName: string, expectedValue: string) {
+  const result = this.getTestData<DatabaseResult>('lastQueryResult');
+  assert.assertDatabaseRowContains(result, columnName, expectedValue);
+  
+  logger.info(`Verified first row has ${columnName} = ${expectedValue}`);
+});
+
+Then('the first row should contain:', function (this: CustomWorld, dataTable: any) {
+  const result = this.getTestData<DatabaseResult>('lastQueryResult');
+  const expectedRow = dataTable.rowsHash();
+  
+  assert.assertDatabaseRowMatches(result, expectedRow);
+  logger.info('Verified first row matches expected data');
+});
+
+Then('all rows should have {string} equal to {string}', function (this: CustomWorld, columnName: string, expectedValue: string) {
+  const result = this.getTestData<DatabaseResult>('lastQueryResult');
+  assert.assertDatabaseRowExists(result);
+  
+  result.rows.forEach((row, index) => {
+    expect(row).toHaveProperty(columnName);
+    expect(row[columnName]).toBe(expectedValue);
+  });
+  
+  logger.info(`Verified all ${result.rowCount} rows have ${columnName} = ${expectedValue}`);
+});
+
+Then('the column {string} should contain {string}', function (this: CustomWorld, columnName: string, expectedValue: string) {
+  const result = this.getTestData<DatabaseResult>('lastQueryResult');
+  assert.assertDatabaseRowExists(result);
+  
+  const hasValue = result.rows.some(row => 
+    row[columnName] && row[columnName].toString().includes(expectedValue)
+  );
+  
+  expect(hasValue).toBe(true);
+  logger.info(`Verified column ${columnName} contains ${expectedValue} in at least one row`);
+});
+
+// Data type and format assertions
+Then('the column {string} should be a number', function (this: CustomWorld, columnName: string) {
+  const result = this.getTestData<DatabaseResult>('lastQueryResult');
+  assert.assertDatabaseRowExists(result);
+  
+  const firstRow = result.rows[0];
+  expect(firstRow).toHaveProperty(columnName);
+  expect(typeof firstRow[columnName]).toBe('number');
+  
+  logger.info(`Verified column ${columnName} is a number`);
+});
+
+Then('the column {string} should be a date', function (this: CustomWorld, columnName: string) {
+  const result = this.getTestData<DatabaseResult>('lastQueryResult');
+  assert.assertDatabaseRowExists(result);
+  
+  const firstRow = result.rows[0];
+  expect(firstRow).toHaveProperty(columnName);
+  
+  const value = firstRow[columnName];
+  const isDate = value instanceof Date || !isNaN(Date.parse(value));
+  expect(isDate).toBe(true);
+  
+  logger.info(`Verified column ${columnName} is a date`);
+});
+
+Then('the column {string} should not be null', function (this: CustomWorld, columnName: string) {
+  const result = this.getTestData<DatabaseResult>('lastQueryResult');
+  assert.assertDatabaseRowExists(result);
+  
+  result.rows.forEach(row => {
+    expect(row[columnName]).not.toBeNull();
+    expect(row[columnName]).not.toBeUndefined();
+  });
+  
+  logger.info(`Verified column ${columnName} is not null in all rows`);
+});
+
+// Database-specific operations
+When('I get the next sequence value for {string}', async function (this: CustomWorld, sequenceName: string) {
+  if (!this.sqlHelper) {
+    await this.initializeDatabase();
+  }
+  
+  let nextValue: number;
+  
+  if (getDatabaseType() === DatabaseType.ORACLE) {
+    const oracleSql = this.sqlHelper as any;
+    nextValue = await oracleSql.getSequenceNextValue(sequenceName);
+  } else {
+    const postgresSql = this.sqlHelper as any;
+    nextValue = await postgresSql.getNextSequenceValue(sequenceName);
+  }
+  
+  this.setTestData('sequenceValue', nextValue);
+  logger.info(`Got next sequence value for ${sequenceName}: ${nextValue}`);
+});
+
+When('I check if table {string} exists', async function (this: CustomWorld, tableName: string) {
+  if (!this.sqlHelper) {
+    await this.initializeDatabase();
+  }
+  
+  let exists: boolean;
+  
+  if (getDatabaseType() === DatabaseType.ORACLE) {
+    const oracleSql = this.sqlHelper as any;
+    exists = await oracleSql.tableExists(tableName);
+  } else {
+    const postgresSql = this.sqlHelper as any;
+    exists = await postgresSql.tableExists(tableName);
+  }
+  
+  this.setTestData('tableExists', exists);
+  logger.info(`Table ${tableName} exists: ${exists}`);
+});
+
+Then('the table {string} should exist', function (this: CustomWorld, tableName: string) {
+  const exists = this.getTestData<boolean>('tableExists');
+  expect(exists).toBe(true);
+  
+  logger.info(`Verified table ${tableName} exists`);
+});
+
+Then('the table {string} should not exist', function (this: CustomWorld, tableName: string) {
+  const exists = this.getTestData<boolean>('tableExists');
+  expect(exists).toBe(false);
+  
+  logger.info(`Verified table ${tableName} does not exist`);
+});
+
+// Transaction operations
+When('I begin a transaction', async function (this: CustomWorld) {
+  if (!this.sqlHelper) {
+    await this.initializeDatabase();
+  }
+  
+  // Note: Transaction handling would need to be implemented in the SQL helpers
+  // This is a placeholder for transaction support
+  this.setTestData('transactionStarted', true);
+  logger.info('Transaction started');
+});
+
+When('I commit the transaction', async function (this: CustomWorld) {
+  const transactionStarted = this.getTestData<boolean>('transactionStarted');
+  if (!transactionStarted) {
+    throw new Error('No transaction to commit');
+  }
+  
+  // Transaction commit logic would go here
+  this.setTestData('transactionStarted', false);
+  logger.info('Transaction committed');
+});
+
+When('I rollback the transaction', async function (this: CustomWorld) {
+  const transactionStarted = this.getTestData<boolean>('transactionStarted');
+  if (!transactionStarted) {
+    throw new Error('No transaction to rollback');
+  }
+  
+  // Transaction rollback logic would go here
+  this.setTestData('transactionStarted', false);
+  logger.info('Transaction rolled back');
+});
+
+// Data extraction and storage
+When('I store the value of column {string} from the first row as {string}', function (this: CustomWorld, columnName: string, variableName: string) {
+  const result = this.getTestData<DatabaseResult>('lastQueryResult');
+  assert.assertDatabaseRowExists(result);
+  
+  const firstRow = result.rows[0];
+  expect(firstRow).toHaveProperty(columnName);
+  
+  const value = firstRow[columnName];
+  this.setTestData(variableName, value);
+  
+  logger.info(`Stored column ${columnName} value as ${variableName}: ${value}`);
+});
+
+When('I store all rows as {string}', function (this: CustomWorld, variableName: string) {
+  const result = this.getTestData<DatabaseResult>('lastQueryResult');
+  this.setTestData(variableName, result.rows);
+  
+  logger.info(`Stored all ${result.rowCount} rows as ${variableName}`);
+});
+
+// Helper function to get predefined queries
+function getPredefinedQuery(dbType: string, queryName: string): string {
+  const queries: Record<string, Record<string, string>> = {
+    oracle: {
+      'select_user': 'SELECT USER FROM DUAL',
+      'select_date': 'SELECT SYSDATE FROM DUAL',
+      'select_version': 'SELECT * FROM V$VERSION WHERE ROWNUM = 1',
+      'count_sessions': 'SELECT COUNT(*) as session_count FROM V$SESSION',
+    },
+    postgres: {
+      'select_user': 'SELECT current_user',
+      'select_date': 'SELECT NOW()',
+      'select_version': 'SELECT version()',
+      'count_connections': 'SELECT COUNT(*) as connection_count FROM pg_stat_activity',
+    },
+  };
+  
+  const dbQueries = queries[dbType.toLowerCase()];
+  if (!dbQueries) {
+    throw new Error(`Unsupported database type: ${dbType}`);
+  }
+  
+  const sql = dbQueries[queryName];
+  if (!sql) {
+    throw new Error(`Unknown query name '${queryName}' for database type '${dbType}'`);
+  }
+  
+  return sql;
+}
+
+// Performance and monitoring
+Then('the query execution time should be less than {int} milliseconds', function (this: CustomWorld, maxTime: number) {
+  const queryStartTime = this.getTestData<number>('queryStartTime');
+  
+  if (queryStartTime) {
+    const executionTime = Date.now() - queryStartTime;
+    expect(executionTime).toBeLessThan(maxTime);
+    logger.info(`Verified query execution time (${executionTime}ms) is less than ${maxTime}ms`);
+  } else {
+    logger.warn('Query start time not recorded, skipping execution time assertion');
+  }
+});
+
+When('I record the query start time', function (this: CustomWorld) {
+  this.setTestData('queryStartTime', Date.now());
+  logger.debug('Recorded query start time');
+});
