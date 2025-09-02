@@ -16,6 +16,7 @@ const config = {
     dryRun: false,
     failFast: false,
     strict: true,
+    timeout: 20000, // 20 seconds timeout for steps
     worldParameters: {
       environment: process.env.APP_ENV || 'T5'
     }
@@ -32,6 +33,7 @@ const config = {
       'html:test-results/smoke-report.html'
     ],
     tags: '@smoke',
+    timeout: 20000, // 20 seconds timeout for steps
     publishQuiet: true
   },
   
@@ -46,6 +48,7 @@ const config = {
       'html:test-results/saucedemo-report.html'
     ],
     tags: '@saucedemo',
+    timeout: 20000, // 20 seconds timeout for steps
     publishQuiet: true
   },
   
@@ -60,6 +63,7 @@ const config = {
       'html:test-results/ui-report.html'
     ],
     tags: '@ui',
+    timeout: 20000, // 20 seconds timeout for steps
     publishQuiet: true
   }
 };

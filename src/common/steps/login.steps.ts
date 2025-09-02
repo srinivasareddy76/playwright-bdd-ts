@@ -24,16 +24,36 @@ Given('I navigate to the login page', async function (this: CustomWorld) {
 });
 
 // Login form interactions
-When('I enter username {string}', async function (this: CustomWorld, username: string) {
-  const loginPage = new LoginPage(this.page!);
-  await loginPage.enterUsername(username);
+When('I enter username {string}', { timeout: 10000 }, async function (this: CustomWorld, username: string) {
+  const currentUrl = this.page!.url();
+  
+  if (currentUrl.includes('saucedemo.com')) {
+    // Use SauceDemo-specific login page
+    const { SauceDemoLoginPage } = await import('../../applications/saucedemo/pages/SauceDemoLoginPage');
+    const sauceDemoPage = new SauceDemoLoginPage(this.page!);
+    await sauceDemoPage.enterUsername(username);
+  } else {
+    // Use generic login page
+    const loginPage = new LoginPage(this.page!);
+    await loginPage.enterUsername(username);
+  }
   
   logger.info(`Entered username: ${username}`);
 });
 
-When('I enter password {string}', async function (this: CustomWorld, password: string) {
-  const loginPage = new LoginPage(this.page!);
-  await loginPage.enterPassword(password);
+When('I enter password {string}', { timeout: 10000 }, async function (this: CustomWorld, password: string) {
+  const currentUrl = this.page!.url();
+  
+  if (currentUrl.includes('saucedemo.com')) {
+    // Use SauceDemo-specific login page
+    const { SauceDemoLoginPage } = await import('../../applications/saucedemo/pages/SauceDemoLoginPage');
+    const sauceDemoPage = new SauceDemoLoginPage(this.page!);
+    await sauceDemoPage.enterPassword(password);
+  } else {
+    // Use generic login page
+    const loginPage = new LoginPage(this.page!);
+    await loginPage.enterPassword(password);
+  }
   
   logger.info('Entered password');
 });
@@ -52,14 +72,24 @@ When('I enter the configured password', async function (this: CustomWorld) {
   logger.info('Entered configured password');
 });
 
-When('I click the login button', async function (this: CustomWorld) {
-  const loginPage = new LoginPage(this.page!);
-  await loginPage.clickLoginButton();
+When('I click the login button', { timeout: 10000 }, async function (this: CustomWorld) {
+  const currentUrl = this.page!.url();
+  
+  if (currentUrl.includes('saucedemo.com')) {
+    // Use SauceDemo-specific login page
+    const { SauceDemoLoginPage } = await import('../../applications/saucedemo/pages/SauceDemoLoginPage');
+    const sauceDemoPage = new SauceDemoLoginPage(this.page!);
+    await sauceDemoPage.clickLoginButton();
+  } else {
+    // Use generic login page
+    const loginPage = new LoginPage(this.page!);
+    await loginPage.clickLoginButton();
+  }
   
   logger.info('Clicked login button');
 });
 
-When('I login with username {string} and password {string}', async function (this: CustomWorld, username: string, password: string) {
+When('I login with username {string} and password {string}', { timeout: 20000 }, async function (this: CustomWorld, username: string, password: string) {
   // Handle special test values
   const actualUsername = username === 'empty_user' ? '' : username;
   const actualPassword = password === 'empty_password' ? '' : password;
@@ -125,8 +155,19 @@ When('I click the logout button', async function (this: CustomWorld) {
 
 // Login form validations
 Then('I should see the login form', async function (this: CustomWorld) {
-  const loginPage = new LoginPage(this.page!);
-  await loginPage.assertLoginFormVisible();
+  const currentUrl = this.page!.url();
+  
+  if (currentUrl.includes('saucedemo.com')) {
+    // Use SauceDemo-specific login page
+    const { SauceDemoLoginPage } = await import('../../applications/saucedemo/pages/SauceDemoLoginPage');
+    const sauceDemoPage = new SauceDemoLoginPage(this.page!);
+    const isVisible = await sauceDemoPage.isLoginFormVisible();
+    expect(isVisible).toBe(true);
+  } else {
+    // Use generic login page
+    const loginPage = new LoginPage(this.page!);
+    await loginPage.assertLoginFormVisible();
+  }
   
   logger.info('Verified login form is visible');
 });

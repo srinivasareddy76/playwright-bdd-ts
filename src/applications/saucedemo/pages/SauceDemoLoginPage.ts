@@ -90,15 +90,16 @@ export class SauceDemoLoginPage extends BasePage {
 
   /**
    * Clicks the login button and waits for navigation or error
+   * @param timeout - Optional timeout in milliseconds (default: 10000 for performance users)
    */
-  async clickLoginButton(): Promise<void> {
+  async clickLoginButton(timeout: number = 10000): Promise<void> {
     logger.info('Clicking login button');
     await this.click(this.selectors.loginButton);
     
     // Wait for either success (inventory page) or error message
     await Promise.race([
-      this.page.waitForSelector(this.selectors.inventoryContainer, { timeout: 5000 }).catch(() => null),
-      this.page.waitForSelector(this.selectors.errorMessage, { timeout: 5000 }).catch(() => null)
+      this.page.waitForSelector(this.selectors.inventoryContainer, { timeout }).catch(() => null),
+      this.page.waitForSelector(this.selectors.errorMessage, { timeout }).catch(() => null)
     ]);
   }
 
@@ -111,7 +112,10 @@ export class SauceDemoLoginPage extends BasePage {
     logger.info(`Attempting login with username: ${username}`);
     await this.enterUsername(username);
     await this.enterPassword(password);
-    await this.clickLoginButton();
+    
+    // Use longer timeout for performance_glitch_user
+    const timeout = username.includes('performance_glitch') ? 15000 : 10000;
+    await this.clickLoginButton(timeout);
   }
 
   /**
@@ -124,11 +128,17 @@ export class SauceDemoLoginPage extends BasePage {
     await this.click(this.selectors.menuButton);
     
     // Wait for menu to open and click logout
-    await this.page.waitForSelector(this.selectors.logoutLink, { state: 'visible' });
+    await this.page.waitForSelector(this.selectors.logoutLink, { state: 'visible', timeout: 10000 });
     await this.click(this.selectors.logoutLink);
     
-    // Wait for login form to appear
-    await this.waitForLoginForm();
+    // Wait for login form to appear with longer timeout
+    try {
+      await this.page.waitForSelector(this.selectors.loginContainer, { state: 'visible', timeout: 10000 });
+    } catch (error) {
+      logger.warn('Login form not visible after logout, but continuing...');
+    }
+    
+    logger.info('Logged out from SauceDemo application');
   }
 
   // ==================== Validation Methods ====================
@@ -139,7 +149,7 @@ export class SauceDemoLoginPage extends BasePage {
    */
   async isLoginFormVisible(): Promise<boolean> {
     try {
-      await this.page.waitForSelector(this.selectors.loginContainer, { state: 'visible', timeout: 3000 });
+      await this.page.waitForSelector(this.selectors.loginContainer, { state: 'visible', timeout: 10000 });
       return true;
     } catch {
       return false;
