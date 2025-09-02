@@ -19,7 +19,7 @@ export class ApiClientFactory {
     }
 
     // Create new client
-    const client = new BaseApiClient(clientConfig);
+    const client = new BaseApiClient(clientConfig.app.baseUrl);
     await client.initialize();
     
     this.clients.set(clientKey, client);

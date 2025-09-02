@@ -1,7 +1,5 @@
-import { APIRequestContext, APIResponse, request, BrowserContext } from '@playwright/test';
-import { CertificateManager } from '../support/certificates';
+import { APIRequestContext, APIResponse, request } from '@playwright/test';
 import { logger } from '../utils/logger';
-import type { Config } from '../../config/schema';
 
 export interface ApiRequestOptions {
   headers?: Record<string, string>;
@@ -19,13 +17,11 @@ export interface ApiResponse {
 
 export class BaseApiClient {
   private context: APIRequestContext | null = null;
-  private config: Config;
-  private certificateManager: CertificateManager;
+  private baseUrl: string;
   private defaultHeaders: Record<string, string>;
 
-  constructor(config: Config) {
-    this.config = config;
-    this.certificateManager = CertificateManager.getInstance(config.certs.client);
+  constructor(baseUrl: string) {
+    this.baseUrl = baseUrl;
     this.defaultHeaders = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
@@ -38,27 +34,17 @@ export class BaseApiClient {
       return; // Already initialized
     }
 
-    logger.info('Initializing API client with mTLS support');
+    logger.info('Initializing API client');
 
     try {
-      const certConfig = this.certificateManager.getClientCertificateConfig();
-      this.certificateManager.validateCertificateForOrigin(this.config.app.baseUrl);
-
       this.context = await request.newContext({
-        baseURL: this.config.app.baseUrl,
-        clientCertificates: [
-          {
-            pfxPath: certConfig.pfxPath,
-            passphrase: certConfig.passphrase,
-            origin: certConfig.origin,
-          },
-        ],
+        baseURL: this.baseUrl,
         extraHTTPHeaders: this.defaultHeaders,
         timeout: 30000,
-        ignoreHTTPSErrors: false, // Set to true only for testing with self-signed certs
+        ignoreHTTPSErrors: false,
       });
 
-      logger.info(`API client initialized with base URL: ${this.config.app.baseUrl}`);
+      logger.info(`API client initialized with base URL: ${this.baseUrl}`);
     } catch (error) {
       logger.error(`Failed to initialize API client: ${error}`);
       throw error;
@@ -228,37 +214,6 @@ export class BaseApiClient {
 
   getDefaultHeaders(): Record<string, string> {
     return { ...this.defaultHeaders };
-  }
-
-  // Browser context with client certificates (for UI tests that need mTLS)
-  static async createBrowserContextWithCerts(
-    browserContext: BrowserContext,
-    config: Config
-  ): Promise<BrowserContext> {
-    const certificateManager = CertificateManager.getInstance(config.certs.client);
-    
-    try {
-      const certConfig = certificateManager.getClientCertificateConfig();
-      
-      // Note: This creates a new context with client certificates
-      // The original context should be closed after creating this one
-      const contextWithCerts = await browserContext.browser()!.newContext({
-        ...browserContext,
-        clientCertificates: [
-          {
-            pfxPath: certConfig.pfxPath,
-            passphrase: certConfig.passphrase,
-            origin: certConfig.origin,
-          },
-        ],
-      });
-
-      logger.info('Browser context created with client certificates');
-      return contextWithCerts;
-    } catch (error) {
-      logger.error(`Failed to create browser context with certificates: ${error}`);
-      throw error;
-    }
   }
 
   // Health check method
