@@ -126,14 +126,14 @@ playwright-bdd-ts/
 
 ## 🎯 Test Scenarios Available
 
-### SauceDemo Tests
+### SauceDemo Tests (T5 Environment)
 - ✅ **Login scenarios**: Valid/invalid credentials
 - ✅ **Product browsing**: Sorting, filtering
 - ✅ **Shopping cart**: Add/remove items
 - ✅ **Checkout process**: Complete purchase flow
 - ✅ **Error handling**: Network issues, invalid data
 
-### PracticeTest Tests
+### PracticeTest Tests (T3 Environment)
 - ✅ **Login validation**: Username/password combinations
 - ✅ **Error messages**: Invalid credential handling
 - ✅ **UI elements**: Form validation, button states
@@ -186,9 +186,10 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 ### Essential Reading
 1. **GETTING_STARTED.md** (this file) - Quick start guide
-2. **LOCAL_SETUP_GUIDE.md** - Detailed setup instructions
-3. **SETUP_CHECKLIST.md** - Step-by-step verification
-4. **HOW_TO_RUN_VERIFICATION.md** - Running setup verification
+2. **T5_T3_ENVIRONMENTS_GUIDE.md** - T5 and T3 environment testing
+3. **LOCAL_SETUP_GUIDE.md** - Detailed setup instructions
+4. **SETUP_CHECKLIST.md** - Step-by-step verification
+5. **HOW_TO_RUN_VERIFICATION.md** - Running setup verification
 
 ### Framework Documentation
 1. **FRAMEWORK_USER_GUIDE.md** - Complete framework usage
