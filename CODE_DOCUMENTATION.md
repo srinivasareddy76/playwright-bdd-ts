@@ -138,16 +138,68 @@ This document provides comprehensive documentation for all relevant files in the
 **Usage**: Provides complete SauceDemo login testing capabilities with support for all user types and scenarios.
 
 #### `steps/saucedemo.steps.ts`
-**Purpose**: Cucumber step definitions specific to SauceDemo application testing.
+**Purpose**: Comprehensive Cucumber step definitions specific to SauceDemo application testing with advanced testing capabilities.
 
 **Key Step Definitions**:
-- `Given('I am on the SauceDemo login page')`: Navigation step
-- `When('I enter username {string} and password {string}')`: Credential input step
-- `When('I click the login button')`: Login action step
-- `Then('I should see the products page')`: Success verification step
-- `Then('I should see error message {string}')`: Error verification step
 
-**Usage**: Bridges Gherkin feature files with page object implementations.
+**Navigation Steps**:
+- `Given('I am on the SauceDemo login page')`: Initializes browser and navigates to SauceDemo login page using config baseUrl
+
+**Authentication Steps**:
+- `When('I login with SauceDemo credentials for {string}')`: Performs login with specified user type and valid password
+- `When('I logout from the application')`: Executes complete logout flow through menu navigation
+- `When('I enter username {string}')`: Fills username field with specified value
+- `When('I enter password {string}')`: Fills password field with specified value
+- `When('I click the login button')`: Clicks login button and waits for response
+
+**Error Handling Steps**:
+- `When('I click the error dismiss button')`: Dismisses error messages by clicking error button
+- `Then('I should see a login error message')`: Validates presence of error message
+- `Then('the error message should contain {string}')`: Validates specific error message content
+
+**Performance Testing Steps**:
+- `When('I measure the login time for {string} with password {string}')`: Measures and stores login duration
+- `Then('the login should complete within {int} seconds')`: Validates login performance against threshold
+
+**Viewport and Responsive Steps**:
+- `When('I set the viewport to mobile size')`: Sets viewport to mobile dimensions (375x667)
+- `Then('all login elements should be visible')`: Validates element visibility across viewport sizes
+
+**Validation Steps**:
+- `Then('I should be logged in successfully')`: Asserts successful login state
+- `Then('I should be logged out successfully')`: Asserts successful logout state
+- `Then('I should see the products page')`: Validates inventory page visibility
+- `Then('I should remain on the login page')`: Validates user stays on login page after failed attempt
+- `Then('the page title should contain {string}')`: Validates page title content
+- `Then('the page URL should contain {string}')`: Validates URL content
+- `Then('I should see the shopping cart icon')`: Validates cart icon presence
+- `Then('I should see the menu button')`: Validates menu button presence
+
+**Form Validation Steps**:
+- `Then('the username field should be visible and enabled')`: Validates username field state
+- `Then('the password field should be visible and enabled')`: Validates password field state
+- `Then('the login button should be visible and enabled')`: Validates login button state
+- `Then('the SauceDemo logo should be visible')`: Validates logo presence
+
+**Accessibility Steps**:
+- `Then('the username field should have proper accessibility attributes')`: Validates ARIA attributes
+- `Then('the password field should have proper accessibility attributes')`: Validates password field accessibility
+- `Then('the login button should have proper accessibility attributes')`: Validates button accessibility
+
+**Security Steps**:
+- `Then('the password field should mask the input')`: Validates password masking
+- `Then('the password field type should be {string}')`: Validates input type attribute
+
+**Features**:
+- Integration with CustomWorld for browser management
+- Configuration-based URL navigation
+- Test data storage and retrieval
+- Comprehensive logging for all actions
+- Support for different user types and scenarios
+- Performance measurement capabilities
+- Responsive design testing support
+
+**Usage**: Implements BDD steps for comprehensive SauceDemo testing including functional, performance, accessibility, and security scenarios.
 
 ### PracticeTest Application (`src/applications/practicetest/`)
 
@@ -182,21 +234,89 @@ This document provides comprehensive documentation for all relevant files in the
 ### JSONPlaceholder API (`src/applications/jsonplaceholder/`)
 
 #### `api/JsonPlaceholderApiClient.ts`
-**Purpose**: API client for JSONPlaceholder REST API interactions.
+**Purpose**: Comprehensive REST API client for JSONPlaceholder API testing with full CRUD operations and advanced features.
 
 **Class**: `JsonPlaceholderApiClient`
-**Methods**:
-- `constructor(baseUrl: string)`: Initializes API client with base URL
-- `getPosts()`: Retrieves all posts from /posts endpoint
-- `getPost(id: number)`: Retrieves specific post by ID
-- `createPost(post: Post)`: Creates new post via POST request
-- `updatePost(id: number, post: Post)`: Updates existing post via PUT
-- `deletePost(id: number)`: Deletes post by ID
-- `getUsers()`: Retrieves all users
-- `getUser(id: number)`: Retrieves specific user
-- `getComments(postId?: number)`: Gets comments, optionally filtered by post
 
-**Usage**: Centralized API interaction layer for JSONPlaceholder endpoints.
+**Properties**:
+- `baseUrl`: 'https://jsonplaceholder.typicode.com'
+- `defaultHeaders`: Content-Type, Accept, User-Agent headers
+- `context`: Playwright APIRequestContext for HTTP operations
+
+**Initialization Methods**:
+- `initialize()`: Creates API request context with base URL and headers
+- `dispose()`: Cleans up API context resources
+- `ensureInitialized()`: Private method ensuring context is ready
+
+**Posts API Methods**:
+- `getAllPosts()`: GET /posts - Retrieves all posts (100 items)
+- `getPostById(postId)`: GET /posts/{id} - Retrieves specific post
+- `getPostsByUserId(userId)`: GET /posts?userId={id} - Filters posts by user
+- `createPost(postData)`: POST /posts - Creates new post with title, body, userId
+- `updatePost(postId, postData)`: PUT /posts/{id} - Complete post replacement
+- `patchPost(postId, partialData)`: PATCH /posts/{id} - Partial post update
+- `deletePost(postId)`: DELETE /posts/{id} - Removes post
+
+**Users API Methods**:
+- `getAllUsers()`: GET /users - Retrieves all users (10 items)
+- `getUserById(userId)`: GET /users/{id} - Retrieves specific user
+- `getUserPosts(userId)`: GET /users/{id}/posts - Gets user's posts
+- `getUserAlbums(userId)`: GET /users/{id}/albums - Gets user's albums
+- `getUserTodos(userId)`: GET /users/{id}/todos - Gets user's todos
+
+**Comments API Methods**:
+- `getAllComments()`: GET /comments - Retrieves all comments (500 items)
+- `getCommentById(commentId)`: GET /comments/{id} - Retrieves specific comment
+- `getPostComments(postId)`: GET /posts/{id}/comments - Gets comments for post
+- `getCommentsByPostId(postId)`: GET /comments?postId={id} - Filters comments by post
+
+**Albums API Methods**:
+- `getAllAlbums()`: GET /albums - Retrieves all albums (100 items)
+- `getAlbumById(albumId)`: GET /albums/{id} - Retrieves specific album
+- `getAlbumPhotos(albumId)`: GET /albums/{id}/photos - Gets album photos
+- `getUserAlbums(userId)`: GET /users/{id}/albums - Gets user's albums
+
+**Photos API Methods**:
+- `getAllPhotos()`: GET /photos - Retrieves all photos (5000 items)
+- `getPhotoById(photoId)`: GET /photos/{id} - Retrieves specific photo
+- `getAlbumPhotos(albumId)`: GET /photos?albumId={id} - Filters photos by album
+
+**Todos API Methods**:
+- `getAllTodos()`: GET /todos - Retrieves all todos (200 items)
+- `getTodoById(todoId)`: GET /todos/{id} - Retrieves specific todo
+- `getUserTodos(userId)`: GET /todos?userId={id} - Filters todos by user
+- `createTodo(todoData)`: POST /todos - Creates new todo
+- `updateTodo(todoId, todoData)`: PUT /todos/{id} - Updates todo
+- `deleteTodo(todoId)`: DELETE /todos/{id} - Removes todo
+
+**Response Validation Methods**:
+- `validatePostResponse(post)`: Validates post object structure
+- `validateUserResponse(user)`: Validates user object structure
+- `validateCommentResponse(comment)`: Validates comment object structure
+- `validateResponseTime(response, maxTime)`: Validates API response time
+- `validateStatusCode(response, expectedCode)`: Validates HTTP status codes
+
+**Error Handling Methods**:
+- `handleApiError(error, context)`: Comprehensive error handling with logging
+- `retryRequest(requestFn, maxRetries)`: Retry mechanism for failed requests
+- `validateApiResponse(response)`: Response validation and error detection
+
+**Performance Testing Methods**:
+- `measureResponseTime(endpoint)`: Measures API endpoint response time
+- `loadTest(endpoint, concurrency, duration)`: Basic load testing capabilities
+- `benchmarkEndpoint(endpoint, iterations)`: Performance benchmarking
+
+**Features**:
+- Automatic request context management
+- Comprehensive logging for all API operations
+- Built-in retry mechanisms for reliability
+- Response validation and error handling
+- Performance measurement capabilities
+- Support for all HTTP methods (GET, POST, PUT, PATCH, DELETE)
+- Configurable timeouts (30s default)
+- Custom headers and authentication support
+
+**Usage**: Provides complete REST API testing capabilities for JSONPlaceholder endpoints with robust error handling and performance monitoring.
 
 #### `models/ApiModels.ts`
 **Purpose**: TypeScript interfaces and types for API data models.
@@ -241,20 +361,65 @@ This document provides comprehensive documentation for all relevant files in the
 ## Common/Shared Code
 
 ### `src/common/pages/BasePage.ts`
-**Purpose**: Base page class providing common functionality for all page objects.
+**Purpose**: Foundation class for all page objects providing common web interaction patterns, waiting strategies, and assertion methods.
 
 **Class**: `BasePage`
-**Methods**:
-- `constructor(page: Page)`: Initializes with Playwright page instance
-- `waitForElement(selector: string, timeout?: number)`: Waits for element visibility
-- `clickElement(selector: string)`: Clicks element with error handling
-- `fillField(selector: string, value: string)`: Fills input field
-- `getText(selector: string)`: Gets text content from element
-- `isElementVisible(selector: string)`: Checks element visibility
-- `takeScreenshot(name: string)`: Captures screenshot for debugging
-- `waitForPageLoad()`: Waits for page to fully load
 
-**Usage**: Extended by all page object classes to inherit common functionality.
+**Navigation Methods**:
+- `goto(url, options?)`: Navigates to URL with configurable wait conditions (networkidle default)
+- `goBack()`: Navigates back to previous page
+- `reload()`: Reloads current page with networkidle wait
+
+**Element Interaction Methods**:
+- `click(selector, options?)`: Clicks element with optional timeout and force options
+- `doubleClick(selector)`: Double-clicks element
+- `type(selector, value, options?)`: Types text with optional delay
+- `clear(selector)`: Clears input element content
+- `selectOption(selector, value)`: Selects dropdown options (single or multiple)
+- `check(selector)`: Checks checkbox element
+- `uncheck(selector)`: Unchecks checkbox element
+
+**Wait Methods**:
+- `waitForVisible(selector, timeout?)`: Waits for element visibility (30s default)
+- `waitForHidden(selector, timeout?)`: Waits for element to be hidden
+- `waitForEnabled(selector, timeout?)`: Waits for element to be enabled
+- `waitForDisabled(selector, timeout?)`: Waits for element to be disabled
+- `waitForText(selector, text, timeout?)`: Waits for specific text content
+- `waitForPageLoad(timeout?)`: Waits for page load completion
+
+**Information Retrieval Methods**:
+- `getText(selector)`: Gets element text content
+- `getValue(selector)`: Gets input element value
+- `getAttribute(selector, attribute)`: Gets element attribute value
+- `isVisible(selector)`: Checks element visibility
+- `isEnabled(selector)`: Checks if element is enabled
+- `isChecked(selector)`: Checks checkbox state
+- `getElementCount(selector)`: Counts matching elements
+
+**Assertion Methods**:
+- `assertVisible(selector)`: Asserts element visibility
+- `assertHidden(selector)`: Asserts element is hidden
+- `assertText(selector, expectedText)`: Asserts element text content
+- `assertValue(selector, expectedValue)`: Asserts input value
+- `assertEnabled(selector)`: Asserts element is enabled
+- `assertDisabled(selector)`: Asserts element is disabled
+
+**Utility Methods**:
+- `takeScreenshot(name?)`: Captures page screenshot
+- `scrollToElement(selector)`: Scrolls element into view
+- `hover(selector)`: Hovers over element
+- `focus(selector)`: Focuses element
+- `pressKey(key)`: Presses keyboard key
+- `uploadFile(selector, filePath)`: Uploads file to input
+
+**Features**:
+- Comprehensive logging for all interactions
+- Configurable timeouts for all wait operations
+- Error handling with detailed error messages
+- Support for complex element interactions
+- Built-in debugging capabilities
+
+**Usage**: Extended by all page object classes to inherit common functionality and ensure consistent interaction patterns.
 
 ### `src/common/pages/LoginPage.ts`
 **Purpose**: Generic login page implementation that can be extended by application-specific login pages.
@@ -311,15 +476,75 @@ This document provides comprehensive documentation for all relevant files in the
 ## Feature Files
 
 ### `src/applications/saucedemo/features/saucedemo_login.feature`
-**Purpose**: BDD scenarios for SauceDemo login functionality testing.
+**Purpose**: Comprehensive BDD scenarios for SauceDemo login functionality testing covering functional, performance, accessibility, and security aspects.
 
-**Scenarios**:
-- Successful login with valid credentials
-- Failed login with invalid credentials
-- Login with locked user account
-- Login form validation
+**Feature Tags**: `@ui @saucedemo @login`
 
-**Usage**: Defines test scenarios in business-readable Gherkin syntax.
+**Background**: 
+- Navigates to SauceDemo login page before each scenario
+
+**Scenario Categories**:
+
+**Positive Login Scenarios** (`@positive`):
+- **Successful login with standard user** (`@smoke`): Basic login validation with products page verification
+- **Login and logout workflow**: Complete authentication cycle testing
+- **Problem user login** (`@problem_user`): Tests login with user that has visual/functional issues
+- **Performance glitch user** (`@performance_user`): Tests login with slower performance user
+- **Error user login** (`@error_user`): Tests login with user that has app-specific errors
+- **Visual user login** (`@visual_user`): Tests login with user that has visual differences
+
+**Negative Login Scenarios** (`@negative`):
+- **Locked out user** (`@locked_user`): Tests locked account error handling
+- **Invalid credentials** (`@invalid_credentials`): Tests wrong username/password combinations
+- **Empty fields validation** (`@empty_fields`): Tests required field validation
+
+**UI and Form Validation** (`@ui @form_validation`):
+- **Login form elements**: Validates presence and functionality of all form elements
+- **Error message handling** (`@error_handling`): Tests error message display and dismissal
+
+**Performance Testing** (`@performance`):
+- **Standard user performance**: Validates login completes within 5 seconds
+- **Performance glitch user timing**: Validates slower login within 10 seconds
+
+**Accessibility Testing** (`@accessibility`):
+- **Form accessibility**: Validates proper ARIA attributes and accessibility compliance
+
+**Security Testing** (`@security`):
+- **Password masking**: Validates password field security features
+
+**Data-Driven Testing** (`@data_driven`):
+- **Valid users outline**: Tests all valid user types using scenario outline
+- **Invalid credentials combinations**: Tests various invalid credential combinations
+
+**Regression Testing** (`@regression`):
+- **Complete workflow**: End-to-end login/logout with comprehensive validations
+
+**Edge Cases** (`@edge_cases`):
+- **Special characters**: Tests username with special characters
+- **Long username**: Tests boundary conditions with very long usernames
+
+**Browser Compatibility** (`@browser_compatibility`):
+- **Responsive design**: Tests login functionality across different viewport sizes
+
+**Key Features**:
+- Comprehensive tag-based test organization
+- Scenario outlines for data-driven testing
+- Performance benchmarking scenarios
+- Accessibility and security validation
+- Edge case and boundary testing
+- Cross-browser and responsive testing
+- Complete workflow regression testing
+
+**Test Coverage**:
+- All SauceDemo user types (6 different users)
+- Positive and negative authentication flows
+- Form validation and error handling
+- Performance measurement and thresholds
+- Accessibility compliance verification
+- Security feature validation
+- Responsive design compatibility
+
+**Usage**: Provides complete test coverage for SauceDemo login functionality with business-readable scenarios that can be executed across different environments and browsers.
 
 ### `src/applications/practicetest/features/practicetest_login.feature`
 **Purpose**: BDD scenarios for PracticeTest login functionality.
