@@ -1,14 +1,17 @@
 # Getting Started with Playwright BDD TypeScript Framework
 
-Welcome! This guide will help you quickly get started with running front-end tests using the Playwright BDD TypeScript framework.
+## Overview
 
-## 🚀 Quick Start (5 Minutes)
+This framework provides a comprehensive BDD (Behavior-Driven Development) testing solution using Playwright and TypeScript. It supports multiple applications and environments with a clean, maintainable architecture.
 
-### 1. Prerequisites
-- **Node.js 18+** - Download from https://nodejs.org/
-- **Git** - Download from https://git-scm.com/
+## Quick Setup
 
-### 2. Setup Repository
+### Prerequisites
+- Node.js (v18 or higher)
+- npm or yarn
+- Git
+
+### Installation
 ```bash
 # Clone the repository
 git clone https://github.com/srinivasareddy76/playwright-bdd-ts.git
@@ -21,258 +24,313 @@ npm install
 npx playwright install
 
 # Verify setup
-npm run verify
+node verify-setup.js
 ```
 
-### 3. Run Your First Tests
+## Environment Configuration
+
+### Available Environments
+- **T5**: SauceDemo application testing (https://saucedemo.com)
+- **T3**: PracticeTest application testing (https://practicetestautomation.com)
+- **U1**: UAT environment
+- **D1**: Development environment
+- **QD1**: On-premise environment
+
+### Setting Environment Variables
+
+#### Cross-Platform (Recommended)
 ```bash
-# Test SauceDemo application (UI)
-npm run test:smoke
+# Install cross-env for cross-platform compatibility
+npm install -g cross-env
 
-# Test API functionality
-npm run examples:api
-
-# Test PracticeTest application (UI)
-npm run test:practicetest:smoke
+# Use with any command
+npx cross-env APP_ENV=T5 npm run test:saucedemo
+npx cross-env APP_ENV=T3 npm run test:practicetest
 ```
 
-## 📋 What You Can Test
-
-### 🖥️ Front-End Applications
-
-#### SauceDemo (E-commerce Demo)
-- **URL**: https://saucedemo.com
-- **Features**: Login, product browsing, shopping cart
-- **Commands**:
-  ```bash
-  npm run test:saucedemo      # All tests
-  npm run test:smoke          # Quick smoke tests
-  npm run test:positive       # Positive scenarios
-  npm run test:negative       # Error handling
-  npm run test:headed         # Watch tests run (browser visible)
-  ```
-
-#### PracticeTest (Login Practice)
-- **URL**: https://practicetestautomation.com/practice-test-login/
-- **Features**: Login validation, error messages
-- **Commands**:
-  ```bash
-  npm run test:practicetest           # All tests
-  npm run test:practicetest:smoke     # Quick tests
-  npm run test:practicetest:positive  # Valid login
-  npm run test:practicetest:negative  # Invalid login
-  npm run test:practicetest:headed    # Watch tests run
-  ```
-
-### 🔌 API Testing
-
-#### JSONPlaceholder API
-- **URL**: https://jsonplaceholder.typicode.com
-- **Features**: Posts, Users, Comments, Todos, Albums
-- **Commands**:
-  ```bash
-  npm run examples:api        # Interactive examples
-  npm run test:api:simple     # Quick API test
-  npm run test:api:smoke      # BDD API tests
-  npm run test:api:posts      # Posts API tests
-  npm run test:api:users      # Users API tests
-  npm run test:api:comments   # Comments API tests
-  ```
-
-## 🛠️ Development Commands
-
-### Building and Testing
+#### Platform-Specific
 ```bash
-npm run build               # Compile TypeScript
-npm run clean              # Clean build directory
-npm run lint               # Check code quality
-npm run format             # Format code
-npm run verify             # Verify setup
+# Linux/macOS
+export APP_ENV=T5
+
+# Windows CMD
+set APP_ENV=T5
+
+# Windows PowerShell
+$env:APP_ENV="T5"
 ```
 
-### Test Execution Modes
+## Running Tests
+
+### SauceDemo Tests (T5 Environment)
 ```bash
-# Headless mode (default) - faster, no browser window
-npm run test:smoke
+# Run all SauceDemo tests
+npm run test:saucedemo
 
-# Headed mode - see browser window, slower but visual
-npm run test:headed
+# With specific environment
+npx cross-env APP_ENV=T5 npm run test:saucedemo
 
-# Specific environment
-APP_ENV=T5 npm run test:smoke
+# Run specific scenarios with tags
+npm run test:saucedemo -- --tags "@smoke"
+npm run test:saucedemo -- --tags "@positive"
+npm run test:saucedemo -- --tags "@performance"
 ```
 
-## 📁 Project Structure
+### PracticeTest Tests (T3 Environment)
+```bash
+# Run PracticeTest tests
+npx cross-env APP_ENV=T3 npm run test:practicetest
+```
+
+### API Tests
+```bash
+# Run JSONPlaceholder API tests
+npm run test:api
+
+# Run API examples
+npm run api:examples
+
+# Simple API test
+node test-api-simple.js
+```
+
+## Test Data and Users
+
+### SauceDemo Users
+All users use password: `secret_sauce`
+- `standard_user` - Normal user
+- `locked_out_user` - Locked account (for error testing)
+- `problem_user` - User with visual/functional issues
+- `performance_glitch_user` - Slow performance user (10s timeout)
+- `error_user` - User with app-specific errors
+- `visual_user` - User with visual differences
+
+### PracticeTest Credentials
+- Username: `student`
+- Password: `Password123`
+
+## Configuration Management
+
+### Environment-Specific Settings
+Each environment has its own JSON configuration file:
+
+```json
+// config/env/test/T5.json (SauceDemo)
+{
+  "name": "Test Environment T5 - SauceDemo",
+  "group": "test",
+  "app": {
+    "baseUrl": "https://saucedemo.com",
+    "username": "standard_user",
+    "password": "secret_sauce"
+  }
+}
+```
+
+### Runtime Overrides
+Override configuration via environment variables:
+```bash
+# Override base URL
+export APP_BASE_URL="https://custom-saucedemo.com"
+
+# Override credentials
+export APP_USERNAME="custom_user"
+export APP_PASSWORD="custom_password"
+```
+
+## API Testing
+
+### JSONPlaceholder API
+Base URL: `https://jsonplaceholder.typicode.com`
+
+Available endpoints:
+- `/posts` - Blog posts (100 items)
+- `/users` - Users (10 items)
+- `/comments` - Comments (500 items)
+- `/albums` - Albums (100 items)
+- `/photos` - Photos (5000 items)
+- `/todos` - Todos (200 items)
+
+### API Test Examples
+```bash
+# Test all posts endpoint
+node test-api-simple.js
+
+# Run comprehensive API tests
+npm run test:api
+```
+
+## Framework Structure
 
 ```
 playwright-bdd-ts/
+├── config/                     # Environment configurations
+│   ├── env/test/T5.json        # SauceDemo config
+│   ├── env/test/T3.json        # PracticeTest config
+│   └── env/uat/U1.json         # UAT config
 ├── src/
-│   ├── applications/           # Test applications
-│   │   ├── saucedemo/         # SauceDemo tests
-│   │   │   ├── features/      # BDD feature files
-│   │   │   ├── steps/         # Step definitions
-│   │   │   └── pages/         # Page objects
-│   │   ├── practicetest/      # PracticeTest tests
-│   │   └── jsonplaceholder/   # API tests
+│   ├── applications/           # Application-specific code
+│   │   ├── saucedemo/         # SauceDemo implementation
+│   │   ├── practicetest/      # PracticeTest implementation
+│   │   └── jsonplaceholder/   # API testing
 │   ├── common/                # Shared utilities
-│   │   ├── pages/            # Common page objects
-│   │   ├── steps/            # Common step definitions
-│   │   └── support/          # Test utilities
-│   └── api/                  # API testing framework
-├── config/                   # Environment configurations
-├── test-results/            # Test reports and screenshots
-└── logs/                    # Application logs
+│   └── utils/                 # Framework utilities
+└── Documentation files
 ```
 
-## 🎯 Test Scenarios Available
+## Troubleshooting
 
-### SauceDemo Tests (T5 Environment)
-- ✅ **Login scenarios**: Valid/invalid credentials
-- ✅ **Product browsing**: Sorting, filtering
-- ✅ **Shopping cart**: Add/remove items
-- ✅ **Checkout process**: Complete purchase flow
-- ✅ **Error handling**: Network issues, invalid data
+### Common Issues
 
-### PracticeTest Tests (T3 Environment)
-- ✅ **Login validation**: Username/password combinations
-- ✅ **Error messages**: Invalid credential handling
-- ✅ **UI elements**: Form validation, button states
-- ✅ **Navigation**: Page redirects and routing
-
-### API Tests
-- ✅ **CRUD operations**: Create, Read, Update, Delete
-- ✅ **Data validation**: Response structure and types
-- ✅ **Error handling**: 404s, invalid requests
-- ✅ **Performance**: Response time validation
-- ✅ **Relationships**: Data integrity across resources
-
-## 🔧 Troubleshooting
-
-### Common Issues and Solutions
-
-#### "Missing script: 'build'" Error
+#### 1. Environment Variable Not Set
+**Error**: `Unknown environment: undefined`
+**Solution**: Set APP_ENV environment variable
 ```bash
-# Pull latest changes
-git pull origin main
-npm install
+npx cross-env APP_ENV=T5 npm run test:saucedemo
 ```
 
-#### Browser Installation Issues
+#### 2. Playwright Browsers Not Installed
+**Error**: `browserType.launch: Executable doesn't exist`
+**Solution**: Install Playwright browsers
 ```bash
-# Reinstall Playwright browsers
-npx playwright install --force
+npx playwright install
 ```
 
-#### Network/Connectivity Issues
+#### 3. Configuration File Not Found
+**Error**: `Configuration file not found`
+**Solution**: Ensure environment configuration exists
 ```bash
-# Test direct access
-curl https://saucedemo.com
-curl https://jsonplaceholder.typicode.com/posts
+ls config/env/test/T5.json  # Should exist
 ```
 
-#### Permission Issues (Windows)
+#### 4. Cross-Platform Environment Variables
+**Issue**: Environment variables work differently on Windows/Linux
+**Solution**: Use cross-env for consistency
 ```bash
-# Run PowerShell as Administrator
+npm install -g cross-env
+npx cross-env APP_ENV=T5 npm run test
+```
+
+### Windows-Specific Setup
+
+#### PowerShell Execution Policy
+```powershell
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
-### Getting Help
-1. **Run verification**: `npm run verify`
-2. **Check documentation**: Review guides in project root
-3. **Check logs**: Look in `logs/` directory
-4. **Test connectivity**: Verify access to test applications
+#### Environment Variables in Windows
+```cmd
+# CMD
+set APP_ENV=T5 && npm run test:saucedemo
 
-## 📚 Documentation Guide
+# PowerShell
+$env:APP_ENV="T5"; npm run test:saucedemo
 
-### Essential Reading
-1. **GETTING_STARTED.md** (this file) - Quick start guide
-2. **T5_T3_ENVIRONMENTS_GUIDE.md** - T5 and T3 environment testing
-3. **LOCAL_SETUP_GUIDE.md** - Detailed setup instructions
-4. **SETUP_CHECKLIST.md** - Step-by-step verification
-5. **HOW_TO_RUN_VERIFICATION.md** - Running setup verification
-
-### Framework Documentation
-1. **FRAMEWORK_USER_GUIDE.md** - Complete framework usage
-2. **API_TESTING_GUIDE.md** - API testing specifics
-3. **SETUP_TROUBLESHOOTING.md** - Common issues and fixes
-
-### Technical Details
-1. **API_IMPLEMENTATION_SUMMARY.md** - Technical overview
-2. **FRAMEWORK_STRUCTURE.md** - Architecture details
-
-## 🎉 Success Indicators
-
-You'll know everything is working when:
-
-### ✅ Verification Passes
-```bash
-npm run verify
-# Should show: "🎉 All checks passed! Your environment is ready for testing."
+# cross-env (recommended)
+npx cross-env APP_ENV=T5 npm run test:saucedemo
 ```
 
-### ✅ Tests Execute Successfully
+## Performance Testing
+
+### Response Time Validation
 ```bash
-npm run test:smoke
-# Should show: Passing scenarios with green checkmarks
+# Test login performance
+npx cross-env APP_ENV=T5 npx cucumber-js --tags "@performance"
 ```
 
-### ✅ API Examples Work
+### Expected Performance Thresholds
+- Standard user login: < 5 seconds
+- Performance glitch user: < 10 seconds
+- API responses: < 2 seconds
+
+## Test Execution Examples
+
+### Basic Test Execution
 ```bash
-npm run examples:api
-# Should show: API operations completing successfully
+# SauceDemo smoke tests
+npx cross-env APP_ENV=T5 npx cucumber-js src/applications/saucedemo/features/ --tags "@smoke"
+
+# All SauceDemo login tests
+npx cross-env APP_ENV=T5 npx cucumber-js src/applications/saucedemo/features/saucedemo_login.feature
+
+# PracticeTest login tests
+npx cross-env APP_ENV=T3 npx cucumber-js src/applications/practicetest/features/practicetest_login.feature
 ```
 
-## 🚀 Next Steps
+### Advanced Test Execution
+```bash
+# Performance tests
+npx cross-env APP_ENV=T5 npx cucumber-js --tags "@performance"
 
-### For Beginners
-1. **Run existing tests** to see the framework in action
-2. **Explore feature files** to understand BDD syntax
-3. **Review step definitions** to see implementation
-4. **Try different test modes** (headed vs headless)
+# Negative test scenarios
+npx cross-env APP_ENV=T5 npx cucumber-js --tags "@negative"
 
-### For Developers
-1. **Write new test scenarios** in existing feature files
-2. **Create new feature files** for additional test cases
-3. **Implement custom step definitions** for specific needs
-4. **Extend page objects** for new UI elements
+# Data-driven tests
+npx cross-env APP_ENV=T5 npx cucumber-js --tags "@data_driven"
+```
 
-### For Advanced Users
-1. **Add new test applications** following existing patterns
-2. **Integrate with CI/CD** pipelines
-3. **Customize reporting** and logging
-4. **Add database testing** capabilities
+## Extending the Framework
 
-## 💡 Tips for Success
+### Adding New Applications
+1. Create directory: `src/applications/newapp/`
+2. Add page objects: `src/applications/newapp/pages/`
+3. Add step definitions: `src/applications/newapp/steps/`
+4. Add feature files: `src/applications/newapp/features/`
+5. Add configuration: `config/env/test/NEW.json`
 
-### Best Practices
-- **Start with smoke tests** to verify basic functionality
-- **Use headed mode** when debugging test failures
-- **Check logs** in the `logs/` directory for detailed information
-- **Run verification** after any environment changes
+### Adding New Environments
+1. Create config file: `config/env/group/ENV.json`
+2. Update environment mapping in `config/index.ts`
+3. Test with: `npx cross-env APP_ENV=NEW npm run test`
 
-### Performance Tips
-- **Use headless mode** for faster execution
-- **Run specific test suites** instead of all tests
-- **Leverage tags** to run targeted test scenarios
-- **Monitor test execution time** and optimize slow tests
+## Cross-Platform Environment Variables
 
-### Development Workflow
-1. **Write feature files** in Gherkin syntax first
-2. **Implement step definitions** to make tests pass
-3. **Create page objects** for UI interactions
-4. **Add assertions** for proper validation
-5. **Run tests frequently** during development
+### Why cross-env?
+Different operating systems handle environment variables differently:
 
-## 🎯 Ready to Start!
+#### Linux/macOS
+```bash
+APP_ENV=T5 npm run test
+```
 
-You now have everything needed to run comprehensive front-end and API tests. The framework provides:
+#### Windows CMD
+```cmd
+set APP_ENV=T5 && npm run test
+```
 
-- **Multiple test applications** for different scenarios
-- **BDD approach** for readable, maintainable tests
-- **TypeScript support** for type safety and better IDE experience
-- **Comprehensive documentation** for guidance
-- **Automated verification** to ensure proper setup
+#### Windows PowerShell
+```powershell
+$env:APP_ENV="T5"; npm run test
+```
 
-**Start with**: `npm run verify` → `npm run test:smoke` → `npm run examples:api`
+#### cross-env Solution (Works Everywhere)
+```bash
+npx cross-env APP_ENV=T5 npm run test
+```
 
-Happy Testing! 🚀
+### Framework Usage with cross-env
+```bash
+# Single environment variable
+npx cross-env APP_ENV=T5 node verify-setup.js
+
+# Multiple environment variables
+npx cross-env APP_ENV=U1 HEADLESS=false npm run test
+
+# Different environments
+npx cross-env APP_ENV=T5 npm run test:saucedemo  # SauceDemo
+npx cross-env APP_ENV=T3 npm run test:practicetest  # PracticeTest
+npx cross-env APP_ENV=U1 npm run test:uat  # UAT environment
+```
+
+## Next Steps
+
+1. **Review Technical Documentation**: See [CODE_DOCUMENTATION.md](./CODE_DOCUMENTATION.md) for detailed class and method documentation
+2. **Explore Repository Structure**: Check [REPOSITORY_STRUCTURE.md](./REPOSITORY_STRUCTURE.md) for complete file organization
+3. **Run Example Tests**: Start with smoke tests to verify setup
+4. **Customize Configuration**: Modify environment files for your needs
+
+## Support
+
+For detailed technical information about classes, methods, and architecture patterns, refer to:
+- [CODE_DOCUMENTATION.md](./CODE_DOCUMENTATION.md) - Comprehensive technical documentation
+- [REPOSITORY_STRUCTURE.md](./REPOSITORY_STRUCTURE.md) - Complete file structure reference
