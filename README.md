@@ -125,14 +125,143 @@ export const T5Config = {
 ### Generated Reports
 - **HTML Report**: `test-results/saucedemo-report.html`
 - **JSON Report**: `test-results/saucedemo-report.json`
+- **Allure Report**: Interactive test reports with detailed analytics
 - **Screenshots**: Automatic failure screenshots
 - **Logs**: Structured logging with timestamps
 
+### Allure Reporting Configuration
+
+The framework includes comprehensive Allure reporting integration for enhanced test analytics and visualization.
+
+#### Setup and Installation
+Allure is already configured in the project. The required dependencies are included in `package.json`:
+
+```json
+{
+  "devDependencies": {
+    "allure-cucumberjs": "^2.15.0",
+    "allure-commandline": "^2.25.0"
+  }
+}
+```
+
+#### Allure Commands
+```bash
+# Generate Allure report from test results
+npm run allure:generate
+
+# Serve Allure report (generates and opens in browser)
+npm run allure:serve
+
+# Open existing Allure report
+npm run allure:open
+
+# Clean Allure results and reports
+npm run allure:clean
+```
+
+#### Running Tests with Allure Reporting
+```bash
+# Run utilities demo with Allure reporting
+npx cucumber-js src/applications/examples/features/utilities-demo.feature \
+  --require "dist/src/common/steps/**/*.js" \
+  --require "dist/src/applications/examples/step-definitions/**/*.js" \
+  --format allure-cucumberjs/reporter \
+  --tags "@utilities-demo"
+
+# Run SauceDemo tests with Allure reporting
+APP_ENV=T5 npx cucumber-js features/ \
+  --require "dist/src/**/*.js" \
+  --format allure-cucumberjs/reporter \
+  --tags "@smoke"
+```
+
+#### Allure Report Features
+- **Test Execution Overview**: Pass/fail statistics with visual charts
+- **Test Suites**: Organized test results by feature files
+- **Timeline View**: Chronological test execution timeline
+- **Graphs & Analytics**: 
+  - Status distribution (passed/failed/broken/skipped)
+  - Test duration analysis
+  - Severity level breakdown
+  - Trend analysis over multiple runs
+- **Behaviors**: Tests organized by user stories and features
+- **Categories**: Automatic failure categorization
+- **Environment Info**: Test environment details and configuration
+- **Attachments**: Screenshots, logs, and test data files
+
+#### Allure Directory Structure
+```
+playwright-bdd-ts/
+├── allure-results/          # Raw test execution data
+│   ├── *-result.json       # Individual test results
+│   ├── *-container.json    # Test suite containers
+│   └── *-attachment.*      # Screenshots and logs
+├── allure-report/          # Generated HTML report
+│   ├── index.html         # Main report entry point
+│   ├── data/              # Report data files
+│   └── plugins/           # Report plugins and widgets
+└── test-results/          # Additional report formats
+    ├── *.html            # Cucumber HTML reports
+    └── *.json            # Cucumber JSON reports
+```
+
+#### Customizing Allure Reports
+Add annotations to your step definitions for enhanced reporting:
+
+```typescript
+import { Given, When, Then } from '@cucumber/cucumber';
+import { allure } from 'allure-cucumberjs';
+
+Given('I perform a test action', async function () {
+  await allure.step('Detailed step description', async () => {
+    // Test implementation
+  });
+  
+  // Add attachments
+  await allure.attachment('Test Data', JSON.stringify(testData), 'application/json');
+  
+  // Add severity and labels
+  await allure.severity('critical');
+  await allure.feature('User Authentication');
+  await allure.story('Login Functionality');
+});
+```
+
+#### Viewing Allure Reports
+1. **Local Development**: 
+   ```bash
+   npm run allure:serve
+   # Opens report at http://localhost:random-port
+   ```
+
+2. **CI/CD Integration**:
+   ```bash
+   npm run allure:generate
+   # Serve the allure-report/ directory via web server
+   ```
+
+3. **Report Sections**:
+   - **Overview**: Executive summary with key metrics
+   - **Suites**: Detailed test results by feature
+   - **Graphs**: Visual analytics and trends
+   - **Timeline**: Test execution chronology
+   - **Behaviors**: BDD-style organization
+   - **Packages**: Code organization view
+
 ### Sample Test Results
 ```
-17 scenarios (12 passed, 5 failed)
-80 steps (61 passed, 14 skipped, 5 failed)
-Execution time: 42.964s
+✅ Utilities Demo Execution Results:
+3 scenarios (3 passed, 0 failed)
+15 steps (15 passed, 0 skipped, 0 failed)
+Execution time: 173ms
+
+📊 Allure Report Generated:
+- Status: 100% passed
+- Duration: 0-80ms per test
+- Severity: 3 normal priority tests
+- Features: Utilities Demonstration
+- Environment: T5 (test)
 ```
 
 ## 🎯 Usage Examples

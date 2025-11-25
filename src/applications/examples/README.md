@@ -163,6 +163,15 @@ npx cucumber-js src/applications/examples/features/visual-testing.feature
 
 # Run API testing scenarios
 npx cucumber-js src/applications/examples/features/api-testing.feature
+
+# Run utilities demo with Allure reporting
+npx cucumber-js src/applications/examples/features/utilities-demo.feature \
+  --require "dist/src/common/steps/**/*.js" \
+  --require "dist/src/applications/examples/step-definitions/**/*.js" \
+  --format allure-cucumberjs/reporter \
+  --format json:test-results/utilities-demo.json \
+  --format html:test-results/utilities-demo.html \
+  --tags "@utilities-demo"
 ```
 
 ### **Running Specific Scenarios by Tags**
@@ -428,12 +437,72 @@ By studying and running these sample features, you will learn:
 7. **Visual Testing**: Screenshot management and regression testing
 8. **Data Management**: File operations and data provider usage
 
+## 📊 Allure Reporting Integration
+
+### **Running Tests with Allure Reports**
+
+The utilities demonstration includes comprehensive Allure reporting integration:
+
+```bash
+# Run utilities demo with full Allure reporting
+node run-utilities-demo.js
+
+# Manual execution with Allure reporting
+APP_ENV=T5 HEADLESS=true npx cucumber-js src/applications/examples/features/utilities-demo.feature \
+  --require "dist/src/common/steps/**/*.js" \
+  --require "dist/src/applications/examples/step-definitions/**/*.js" \
+  --format progress-bar \
+  --format json:test-results/utilities-demo.json \
+  --format html:test-results/utilities-demo.html \
+  --format allure-cucumberjs/reporter \
+  --tags "@utilities-demo"
+
+# Generate and serve Allure report
+npm run allure:generate
+npm run allure:serve
+```
+
+### **Allure Report Features for Utilities Demo**
+
+- **Test Execution Overview**: 100% pass rate with detailed timing
+- **Utility Class Coverage**: All 7 utility classes demonstrated
+- **Test Data Attachments**: Generated user profiles and file operations
+- **Environment Configuration**: T5 test environment details
+- **Step-by-Step Execution**: Detailed breakdown of each utility operation
+- **Performance Metrics**: Execution times for each utility operation
+
+### **Sample Allure Results**
+
+```
+✅ Utilities Demo Execution Results:
+3 scenarios (3 passed, 0 failed)
+15 steps (15 passed, 0 skipped, 0 failed)
+Execution time: 173ms
+
+📊 Allure Report Highlights:
+- Status: 100% passed (green)
+- Duration: 0-80ms per test scenario
+- Severity: 3 normal priority tests
+- Features: Utilities Demonstration
+- Environment: T5 (test environment)
+- Attachments: Generated test data files
+```
+
+### **Viewing Allure Reports**
+
+1. **Interactive Dashboard**: Navigate through Overview, Suites, Graphs, Timeline
+2. **Test Details**: Click on individual scenarios for step-by-step execution
+3. **Attachments**: View generated user profiles and temporary files
+4. **Graphs**: Visual analytics showing test distribution and performance
+5. **Timeline**: Chronological view of test execution
+
 ## 🔗 Related Documentation
 
 - [Utilities Documentation](../../UTILITIES_DOCUMENTATION.md)
 - [Usage Examples](../../examples/utilities-usage-examples.ts)
 - [Test Suite](../../src/utils/utils.test.ts)
 - [Implementation Summary](../../UTILITIES_SUMMARY.md)
+- [Main README - Allure Configuration](../../README.md#allure-reporting-configuration)
 
 ---
 
