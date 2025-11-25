@@ -26,8 +26,8 @@ import {
   ConfigManager, 
   DriverManager,
   BrowserName 
-} from '../../../src/utils';
-import { testContext } from '../../../src/support/testContext';
+} from '../../../utils';
+import { testContext } from '../../../support/testContext';
 
 // Global test data storage
 let generatedTestData: any = {};

@@ -10,12 +10,14 @@ This directory contains comprehensive sample feature files that demonstrate how 
 ## 📁 Directory Structure
 
 ```
-features/samples/
+src/applications/examples/
 ├── README.md                           # This documentation file
-├── user-registration.feature           # User management and data generation examples
-├── e-commerce-checkout.feature         # Payment processing and financial data examples
-├── data-management.feature             # File operations and data provider examples
-├── visual-testing.feature              # Screenshot and visual testing examples
+├── features/
+│   ├── user-registration.feature       # User management and data generation examples
+│   ├── e-commerce-checkout.feature     # Payment processing and financial data examples
+│   ├── data-management.feature         # File operations and data provider examples
+│   ├── visual-testing.feature          # Screenshot and visual testing examples
+│   └── api-testing.feature             # API testing with comprehensive utilities integration
 └── step-definitions/
     └── utilities-steps.ts              # Comprehensive step definitions for all utilities
 ```
@@ -148,48 +150,54 @@ Comprehensive step definitions that demonstrate:
 
 ```bash
 # Run user registration scenarios
-npx cucumber-js features/samples/user-registration.feature
+npx cucumber-js src/applications/examples/features/user-registration.feature
 
 # Run e-commerce checkout scenarios
-npx cucumber-js features/samples/e-commerce-checkout.feature
+npx cucumber-js src/applications/examples/features/e-commerce-checkout.feature
 
 # Run data management scenarios
-npx cucumber-js features/samples/data-management.feature
+npx cucumber-js src/applications/examples/features/data-management.feature
 
 # Run visual testing scenarios
-npx cucumber-js features/samples/visual-testing.feature
+npx cucumber-js src/applications/examples/features/visual-testing.feature
+
+# Run API testing scenarios
+npx cucumber-js src/applications/examples/features/api-testing.feature
 ```
 
 ### **Running Specific Scenarios by Tags**
 
 ```bash
 # Run only smoke tests
-npx cucumber-js --tags "@smoke"
+npx cucumber-js src/applications/examples/features/ --tags "@smoke"
 
 # Run data generation tests
-npx cucumber-js --tags "@data-generation"
+npx cucumber-js src/applications/examples/features/ --tags "@data-generation"
 
 # Run cross-browser tests
-npx cucumber-js --tags "@cross-browser"
+npx cucumber-js src/applications/examples/features/ --tags "@cross-browser"
 
 # Run visual testing scenarios
-npx cucumber-js --tags "@visual-testing"
+npx cucumber-js src/applications/examples/features/ --tags "@visual-testing"
 
 # Run file operations tests
-npx cucumber-js --tags "@file-operations"
+npx cucumber-js src/applications/examples/features/ --tags "@file-operations"
+
+# Run all sample features
+npx cucumber-js src/applications/examples/features/
 ```
 
 ### **Running with Different Environments**
 
 ```bash
 # Run in staging environment
-NODE_ENV=staging npx cucumber-js features/samples/
+NODE_ENV=staging npx cucumber-js src/applications/examples/features/
 
 # Run in production environment
-NODE_ENV=production npx cucumber-js features/samples/
+NODE_ENV=production npx cucumber-js src/applications/examples/features/
 
 # Run with specific browser
-BROWSER=firefox npx cucumber-js features/samples/
+BROWSER=firefox npx cucumber-js src/applications/examples/features/
 ```
 
 ## 🔧 Configuration
