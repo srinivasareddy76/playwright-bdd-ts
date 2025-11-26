@@ -53,3 +53,23 @@ Thumbs.db
 # Temporary files
 tmp/
 temp/
+
+# Documentation artifacts (keep only README.md)
+*_REPORT.md
+*_SUMMARY.md
+*_DOCUMENTATION.md
+FINAL_*.md
+ALLURE_*.md
+PRACTICETEST_*.md
+UTILITIES_*.md
+
+# Utility scripts (keep only essential ones)
+test-*.js
+verify-*.js
+run-*-examples.js
+run-*-tests.js
+
+# Config artifacts
+cucumber.config.js
+allure.config.js
+copy-config.js

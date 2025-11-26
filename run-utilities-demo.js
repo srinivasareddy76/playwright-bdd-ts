@@ -27,10 +27,35 @@ try {
   console.log('🧹 Cleaning previous test results...');
   execSync('rm -rf allure-results/* test-results/*', { stdio: 'inherit' });
 
-  // Copy configuration
+  // Copy configuration files to dist directory
   console.log('⚙️  Copying configuration files...');
-  if (fs.existsSync('copy-config.js')) {
-    execSync('node copy-config.js', { stdio: 'inherit' });
+  const configSrc = 'config';
+  const configDest = 'dist/config';
+  
+  if (fs.existsSync(configSrc)) {
+    // Create dist/config directory if it doesn't exist
+    if (!fs.existsSync(configDest)) {
+      fs.mkdirSync(configDest, { recursive: true });
+    }
+    
+    // Copy config files recursively
+    function copyRecursive(src, dest) {
+      const stats = fs.statSync(src);
+      if (stats.isDirectory()) {
+        if (!fs.existsSync(dest)) {
+          fs.mkdirSync(dest, { recursive: true });
+        }
+        const files = fs.readdirSync(src);
+        files.forEach(file => {
+          copyRecursive(path.join(src, file), path.join(dest, file));
+        });
+      } else {
+        fs.copyFileSync(src, dest);
+      }
+    }
+    
+    copyRecursive(configSrc, configDest);
+    console.log('✅ Configuration files copied successfully');
   }
 
   // Run utilities demo with Allure reporting
