@@ -178,37 +178,383 @@ npm run test:utilities
 
 ## Configuration
 
-### Environment Configuration
-The framework supports multiple environments configured in `config/env/`:
+The framework uses a sophisticated configuration management system built with TypeScript and Zod validation. This system provides type-safe, validated configuration loading with support for multiple environments and runtime overrides.
 
+### Configuration Architecture
+
+The configuration system consists of two main components:
+
+#### 1. `config/index.ts` - Configuration Loader
+This is the main configuration management module that:
+- **Loads environment-specific configurations** from JSON files
+- **Applies runtime overrides** via environment variables
+- **Validates configurations** using Zod schemas
+- **Caches configurations** for performance optimization
+- **Supports multiple environment groups** (dev, test, uat, onprem)
+
+Key features:
+- Environment-specific configuration loading
+- Runtime configuration overrides via environment variables
+- Configuration validation using Zod schemas
+- Caching for performance optimization
+- Support for Oracle, PostgreSQL, and client certificate configurations
+
+#### 2. `config/schema.ts` - Configuration Schema
+This module defines the Zod schema for validating configuration objects:
+- **Type-safe configuration** with TypeScript integration
+- **Runtime validation** of configuration data
+- **Default values** for optional properties
+- **Custom validation rules** for complex requirements
+- **Comprehensive validation** for all configuration sections
+
+### Environment Configuration Structure
+
+The framework supports multiple environments organized by groups:
+
+```
+config/env/
+├── dev/           # Development environments (D1, D2, D3)
+├── test/          # Test environments (T1, T2, T3, T4, T5)
+├── uat/           # User Acceptance Test environments (U1, U2, U3, U4)
+└── onprem/        # On-premise environments (QD1, QD2, QD3, QD4)
+```
+
+Currently configured environments:
 - **T3**: Test environment for PracticeTest application (https://practicetestautomation.com)
 - **T5**: Test environment for SauceDemo application (https://saucedemo.com)
 
-#### Environment-Specific Settings
-Each environment has its own JSON configuration file:
+### Configuration File Structure
+
+Each environment configuration file follows this comprehensive structure:
 
 ```json
-// config/env/test/T5.json (SauceDemo)
+// config/env/test/T5.json (Complete example)
 {
-  "name": "Test Environment T5 - SauceDemo",
+  "name": "T5",
   "group": "test",
   "app": {
     "baseUrl": "https://saucedemo.com",
     "username": "standard_user",
     "password": "secret_sauce"
+  },
+  "db": {
+    "oracle": {
+      "host": "t5-oracle.host",
+      "port": 1521,
+      "serviceName": "ORCL",
+      "user": "t5_oracle_user",
+      "password": "CHANGE_ME",
+      "poolMin": 2,
+      "poolMax": 10,
+      "poolIncrement": 2,
+      "poolTimeout": 60
+    },
+    "postgres": {
+      "host": "t5-pg.host",
+      "port": 5432,
+      "database": "t5_appdb",
+      "user": "t5_pg_user",
+      "password": "CHANGE_ME",
+      "max": 20,
+      "idleTimeoutMillis": 30000,
+      "connectionTimeoutMillis": 2000
+    }
+  },
+  "certs": {
+    "client": {
+      "pfxPath": "secrets/t5-client.pfx",
+      "passphrase": "CHANGE_ME",
+      "origin": "https://api.t5.example.com"
+    }
   }
 }
 ```
 
-#### Runtime Configuration Overrides
-Override configuration via environment variables:
-```bash
-# Override base URL
-export APP_BASE_URL="https://custom-saucedemo.com"
+### Configuration Sections Explained
 
-# Override credentials
+#### Application Configuration (`app`)
+- **baseUrl**: The base URL of the application under test
+- **username**: Default username for authentication
+- **password**: Default password for authentication
+
+#### Database Configuration (`db`)
+**Oracle Database:**
+- **host**: Oracle database server hostname
+- **port**: Oracle database port (typically 1521)
+- **serviceName**: Oracle service name (alternative to connect string)
+- **connectString**: Oracle connect string (alternative to service name)
+- **user**: Database username
+- **password**: Database password
+- **poolMin**: Minimum connections in pool (default: 1)
+- **poolMax**: Maximum connections in pool (default: 10)
+- **poolIncrement**: Pool increment size (default: 1)
+- **poolTimeout**: Pool timeout in seconds (default: 60)
+- **enableStatistics**: Enable connection statistics (default: false)
+
+**PostgreSQL Database:**
+- **host**: PostgreSQL server hostname
+- **port**: PostgreSQL port (typically 5432)
+- **database**: Database name
+- **user**: Database username
+- **password**: Database password
+- **max**: Maximum connections in pool (default: 20)
+- **idleTimeoutMillis**: Idle timeout in milliseconds (default: 30000)
+- **connectionTimeoutMillis**: Connection timeout in milliseconds (default: 2000)
+- **ssl**: SSL configuration for secure connections (optional)
+
+#### Certificate Configuration (`certs`)
+**Client Certificates (for mTLS):**
+- **pfxPath**: Path to PFX certificate file
+- **passphrase**: Passphrase for PFX certificate
+- **origin**: Origin URL for certificate validation
+
+### Using the Configuration System
+
+#### 1. Loading Configuration in Code
+```typescript
+import { loadConfig, getAppEnv, isOnPremEnv } from '../config';
+
+// Load current environment configuration
+const config = loadConfig();
+
+// Access configuration values
+const baseUrl = config.app.baseUrl;
+const username = config.app.username;
+const oracleHost = config.db.oracle.host;
+
+// Get current environment info
+const currentEnv = getAppEnv(); // Returns 'T5', 'T3', etc.
+const isOnPrem = isOnPremEnv(); // Returns true for QD1-QD4 environments
+```
+
+#### 2. Runtime Configuration Overrides
+Override any configuration value using environment variables:
+
+**Application Overrides:**
+```bash
+export APP_BASE_URL="https://custom-saucedemo.com"
 export APP_USERNAME="custom_user"
 export APP_PASSWORD="custom_password"
+```
+
+**Oracle Database Overrides:**
+```bash
+export ORACLE_HOST="custom-oracle.host"
+export ORACLE_PORT="1521"
+export ORACLE_SERVICE_NAME="CUSTOM_ORCL"
+export ORACLE_USER="custom_oracle_user"
+export ORACLE_PASSWORD="custom_oracle_password"
+```
+
+**PostgreSQL Database Overrides:**
+```bash
+export POSTGRES_HOST="custom-pg.host"
+export POSTGRES_PORT="5432"
+export POSTGRES_DATABASE="custom_appdb"
+export POSTGRES_USER="custom_pg_user"
+export PG_PASSWORD="custom_pg_password"
+```
+
+**Client Certificate Overrides:**
+```bash
+export PFX_PATH="secrets/custom-client.pfx"
+export PFX_PASSPHRASE="custom_passphrase"
+export CERT_ORIGIN="https://api.custom.example.com"
+```
+
+#### 3. Environment Selection
+Set the target environment using the `APP_ENV` variable:
+```bash
+# Use T5 environment (SauceDemo)
+export APP_ENV=T5
+
+# Use T3 environment (PracticeTest)
+export APP_ENV=T3
+
+# Run tests with specific environment
+APP_ENV=T3 npm run test:practicetest
+```
+
+### Adding New Environments
+
+#### 1. Create Configuration File
+```bash
+# For a new test environment T6
+mkdir -p config/env/test
+```
+
+Create `config/env/test/T6.json`:
+```json
+{
+  "name": "T6",
+  "group": "test",
+  "app": {
+    "baseUrl": "https://newapp.example.com",
+    "username": "testuser",
+    "password": "testpass"
+  },
+  "db": {
+    "oracle": {
+      "host": "t6-oracle.host",
+      "port": 1521,
+      "serviceName": "ORCL",
+      "user": "t6_oracle_user",
+      "password": "CHANGE_ME"
+    },
+    "postgres": {
+      "host": "t6-pg.host",
+      "port": 5432,
+      "database": "t6_appdb",
+      "user": "t6_pg_user",
+      "password": "CHANGE_ME"
+    }
+  },
+  "certs": {
+    "client": {
+      "pfxPath": "secrets/t6-client.pfx",
+      "passphrase": "CHANGE_ME",
+      "origin": "https://api.t6.example.com"
+    }
+  }
+}
+```
+
+#### 2. Update Environment Mapping (if needed)
+If adding a new environment group, update `ENV_GROUP_MAP` in `config/index.ts`:
+```typescript
+const ENV_GROUP_MAP: Record<string, string> = {
+  // ... existing mappings
+  T6: 'test',  // Add new environment
+};
+```
+
+#### 3. Test New Environment
+```bash
+APP_ENV=T6 npm run build
+APP_ENV=T6 npm run test
+```
+
+### Configuration Validation
+
+The framework uses Zod for runtime configuration validation:
+
+#### Validation Features
+- **Type Safety**: Compile-time type checking with TypeScript
+- **Runtime Validation**: Ensures configuration integrity at runtime
+- **Default Values**: Automatic application of default values
+- **Custom Rules**: Complex validation rules (e.g., Oracle serviceName OR connectString required)
+- **Error Messages**: Detailed validation error messages
+
+#### Validation Example
+```typescript
+import { validateConfig } from '../config/schema';
+
+try {
+  const config = validateConfig(rawConfigData);
+  // Configuration is valid and typed
+} catch (error) {
+  // Handle validation errors
+  console.error('Configuration validation failed:', error.message);
+}
+```
+
+### Configuration Best Practices
+
+#### 1. Security
+- **Never commit sensitive data** (passwords, certificates) to version control
+- **Use environment variables** for sensitive configuration overrides
+- **Store certificates** in the `secrets/` directory (gitignored)
+- **Use placeholder values** like "CHANGE_ME" in configuration files
+
+#### 2. Environment Management
+- **Use consistent naming** for environments (T1-T5 for test, D1-D3 for dev)
+- **Group environments logically** (test, dev, uat, onprem)
+- **Document environment purposes** in configuration file names
+
+#### 3. Configuration Structure
+- **Follow the schema** defined in `config/schema.ts`
+- **Provide all required fields** even if not currently used
+- **Use meaningful default values** for optional properties
+- **Validate configurations** before deployment
+
+### Troubleshooting Configuration Issues
+
+#### Common Issues and Solutions
+
+**1. Configuration File Not Found**
+```bash
+Error: Configuration file not found: /path/to/config/env/test/T6.json
+```
+Solution: Ensure the configuration file exists in the correct directory structure.
+
+**2. Validation Errors**
+```bash
+Error: Failed to load or validate config: Invalid URL format
+```
+Solution: Check that all URLs in the configuration are properly formatted.
+
+**3. Environment Variable Override Not Working**
+```bash
+# Ensure environment variables are properly set
+echo $APP_BASE_URL
+export APP_BASE_URL="https://correct-url.com"
+```
+
+**4. Database Connection Issues**
+```bash
+# Verify database configuration
+APP_ENV=T5 node -e "console.log(require('./dist/config').loadConfig().db.oracle)"
+```
+
+### Configuration Usage Examples
+
+#### Example 1: Basic Configuration Loading
+```typescript
+// In a test file or page object
+import { loadConfig } from '../config';
+
+const config = loadConfig();
+await page.goto(config.app.baseUrl);
+await page.fill('#username', config.app.username);
+await page.fill('#password', config.app.password);
+```
+
+#### Example 2: Environment-Specific Logic
+```typescript
+import { loadConfig, isOnPremEnv } from '../config';
+
+const config = loadConfig();
+
+if (isOnPremEnv()) {
+  // Use on-premise specific logic
+  await setupOnPremiseConnection();
+} else {
+  // Use cloud-specific logic
+  await setupCloudConnection();
+}
+```
+
+#### Example 3: Database Configuration
+```typescript
+import { loadConfig } from '../config';
+
+const config = loadConfig();
+
+// Oracle connection
+const oracleConfig = {
+  user: config.db.oracle.user,
+  password: config.db.oracle.password,
+  connectString: `${config.db.oracle.host}:${config.db.oracle.port}/${config.db.oracle.serviceName}`
+};
+
+// PostgreSQL connection
+const pgConfig = {
+  host: config.db.postgres.host,
+  port: config.db.postgres.port,
+  database: config.db.postgres.database,
+  user: config.db.postgres.user,
+  password: config.db.postgres.password
+};
 ```
 
 ### Environment Variables
