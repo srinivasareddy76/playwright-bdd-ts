@@ -9,6 +9,17 @@ dist/
 build/
 *.tsbuildinfo
 
+# Compiled TypeScript files
+*.js
+*.js.map
+*.d.ts
+*.d.ts.map
+
+# Exception: Keep essential JavaScript files
+!run-utilities-demo.js
+!cucumber.config.js
+!playwright.config.js
+
 # Environment files
 .env
 .env.local
