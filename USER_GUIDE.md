@@ -107,8 +107,35 @@ playwright-bdd-ts/
 ### Environment Configuration
 The framework supports multiple environments configured in `config/env/`:
 
-- **T3**: Test environment for PracticeTest application
-- **T5**: Test environment for SauceDemo application
+- **T3**: Test environment for PracticeTest application (https://practicetestautomation.com)
+- **T5**: Test environment for SauceDemo application (https://saucedemo.com)
+
+#### Environment-Specific Settings
+Each environment has its own JSON configuration file:
+
+```json
+// config/env/test/T5.json (SauceDemo)
+{
+  "name": "Test Environment T5 - SauceDemo",
+  "group": "test",
+  "app": {
+    "baseUrl": "https://saucedemo.com",
+    "username": "standard_user",
+    "password": "secret_sauce"
+  }
+}
+```
+
+#### Runtime Configuration Overrides
+Override configuration via environment variables:
+```bash
+# Override base URL
+export APP_BASE_URL="https://custom-saucedemo.com"
+
+# Override credentials
+export APP_USERNAME="custom_user"
+export APP_PASSWORD="custom_password"
+```
 
 ### Environment Variables
 Create a `.env` file based on `.env.example`:
@@ -128,6 +155,33 @@ BROWSER=chromium
 # Test settings
 TIMEOUT=30000
 ```
+
+## Test Data and User Credentials
+
+### SauceDemo Test Users
+All SauceDemo users use the password: `secret_sauce`
+
+- **standard_user** - Normal user for standard testing
+- **locked_out_user** - Locked account (for error testing scenarios)
+- **problem_user** - User with visual/functional issues
+- **performance_glitch_user** - Slow performance user (10s timeout)
+- **error_user** - User with application-specific errors
+- **visual_user** - User with visual differences
+
+### PracticeTest Credentials
+- **Username**: `student`
+- **Password**: `Password123`
+
+### API Testing Endpoints
+**JSONPlaceholder API** (Base URL: `https://jsonplaceholder.typicode.com`)
+
+Available endpoints:
+- `/posts` - Blog posts (100 items)
+- `/users` - Users (10 items)
+- `/comments` - Comments (500 items)
+- `/albums` - Albums (100 items)
+- `/photos` - Photos (5000 items)
+- `/todos` - Todos (200 items)
 
 ## Running Tests
 
@@ -179,6 +233,38 @@ cross-env APP_ENV=T3 npm test
 
 # Run with headed browser
 cross-env HEADLESS=false npm run test:saucedemo
+```
+
+#### Cross-Platform Environment Variables
+Different operating systems handle environment variables differently:
+
+**Linux/macOS:**
+```bash
+APP_ENV=T5 npm run test
+export APP_ENV=T5
+```
+
+**Windows CMD:**
+```cmd
+set APP_ENV=T5 && npm run test
+```
+
+**Windows PowerShell:**
+```powershell
+$env:APP_ENV="T5"; npm run test
+```
+
+**cross-env Solution (Recommended - Works Everywhere):**
+```bash
+# Install cross-env globally for convenience
+npm install -g cross-env
+
+# Use with any command
+npx cross-env APP_ENV=T5 npm run test:saucedemo
+npx cross-env APP_ENV=T3 npm run test:practicetest
+
+# Multiple environment variables
+npx cross-env APP_ENV=T5 HEADLESS=false npm run test
 ```
 
 #### Run Specific Feature Files
@@ -389,6 +475,42 @@ npx cucumber-js src/applications/examples/features/utilities-demo.feature \
   --tags "@smoke"
 ```
 
+#### 6. Windows-Specific Issues
+
+**PowerShell Execution Policy Error:**
+```powershell
+# Fix execution policy
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+**Environment Variables in Windows:**
+```cmd
+# CMD
+set APP_ENV=T5 && npm run test:saucedemo
+
+# PowerShell
+$env:APP_ENV="T5"; npm run test:saucedemo
+
+# cross-env (recommended)
+npx cross-env APP_ENV=T5 npm run test:saucedemo
+```
+
+#### 7. Performance Issues
+
+**Expected Performance Thresholds:**
+- Standard user login: < 5 seconds
+- Performance glitch user: < 10 seconds
+- API responses: < 2 seconds
+
+**Performance Testing:**
+```bash
+# Test login performance
+npx cross-env APP_ENV=T5 npx cucumber-js --tags "@performance"
+
+# Performance glitch user testing
+npx cross-env APP_ENV=T5 npx cucumber-js --tags "@performance_glitch"
+```
+
 ## Advanced Usage
 
 ### Custom Test Execution
@@ -442,6 +564,107 @@ npm run lint             # Code quality check
 npm run build            # Build project
 npm run test:smoke       # Run smoke tests
 npm run allure:generate  # Generate reports
+```
+
+### Extending the Framework
+
+#### Adding New Applications
+1. **Create Application Directory Structure:**
+```bash
+mkdir -p src/applications/newapp/{pages,steps,features,data}
+```
+
+2. **Add Page Objects:**
+```typescript
+// src/applications/newapp/pages/NewAppPage.ts
+import { BasePage } from '../../common/pages/BasePage';
+
+export class NewAppPage extends BasePage {
+  // Page-specific methods
+}
+```
+
+3. **Add Step Definitions:**
+```typescript
+// src/applications/newapp/steps/newapp.steps.ts
+import { Given, When, Then } from '@cucumber/cucumber';
+
+Given('I am on the new app page', async function() {
+  // Implementation
+});
+```
+
+4. **Add Feature Files:**
+```gherkin
+# src/applications/newapp/features/newapp.feature
+Feature: New Application Testing
+  
+  Scenario: Basic functionality
+    Given I am on the new app page
+    When I perform an action
+    Then I should see the expected result
+```
+
+5. **Add Environment Configuration:**
+```json
+// config/env/test/NEW.json
+{
+  "name": "New Application Environment",
+  "group": "test",
+  "app": {
+    "baseUrl": "https://newapp.example.com",
+    "username": "testuser",
+    "password": "testpass"
+  }
+}
+```
+
+#### Adding New Environments
+1. **Create Configuration File:**
+```bash
+# For production environment
+mkdir -p config/env/prod
+```
+
+2. **Add Environment Config:**
+```json
+// config/env/prod/PROD.json
+{
+  "name": "Production Environment",
+  "group": "prod",
+  "app": {
+    "baseUrl": "https://app.production.com"
+  }
+}
+```
+
+3. **Test New Environment:**
+```bash
+npx cross-env APP_ENV=PROD npm run test
+```
+
+#### Adding Custom Utilities
+1. **Create Utility Class:**
+```typescript
+// src/utils/CustomUtils.ts
+export class CustomUtils {
+  static customMethod(): string {
+    return 'Custom functionality';
+  }
+}
+```
+
+2. **Export from Index:**
+```typescript
+// src/utils/index.ts
+export { CustomUtils } from './CustomUtils';
+```
+
+3. **Use in Step Definitions:**
+```typescript
+import { CustomUtils } from '../../utils';
+
+// Use CustomUtils.customMethod()
 ```
 
 ## Quick Start Checklist
